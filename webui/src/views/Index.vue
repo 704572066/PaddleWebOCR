@@ -59,7 +59,7 @@
             <div style="margin-top:1rem;">
               <p>
                 选择标签位置:
-                <a-select default-value="加拿大安全认证_左B柱侧面上方" style="width: 220px" @change="handleOrcModelChange">
+                <a-select default-value="加拿大安全认证_左B柱侧面上方" style="width: 220px" @change="handleLabelLocationChangehandleOrcModelChange">
                  <a-select-option value="加拿大安全认证_左B柱侧面上方">
                   加拿大安全认证_左B柱侧面上方
                  </a-select-option>
@@ -91,7 +91,7 @@
               </p>
               <p>
                 选择模型:
-                <a-select default-value="ch_ppocr_mobile_v2.0_xx" style="width: 220px" @change="handleLabelLocationChange">
+                <a-select default-value="ch_ppocr_mobile_v2.0_xx" style="width: 220px" @change="handleOrcModelChange">
                  <a-select-option value="ch_ppocr_mobile_v2.0_xx">
                    ch_ppocr_mobile_v2.0_xx
                  </a-select-option>
@@ -275,7 +275,7 @@ export default {
       }
 
       formData.append('ocr_model',this.$data.ocrModel)
-
+      console.log(this.$data.ocrModel)
       this.isOCRing = true
       this.uploading = true
 
@@ -450,7 +450,7 @@ export default {
       }
 
       formData.append('ocr_model',this.$data.ocrModel)
-      formData.append('id',4)
+      formData.append('id',5)
 
       this.isOCRing = true
       this.uploading = true
