@@ -23,7 +23,28 @@
             <img :src="upImage" alt="预览图片" :hidden="previewImgHidden" />
           </div>
           <!-- </div> -->
+
+          <div class="upimg-dragger">
+            <a-upload-dragger
+              name="file"
+              action="/tools/ocr_text/"
+              @change="handleLabelLocationPicChange"
+              accept=".jpg, .jpeg, .png, .gif, .ico"
+              :beforeUpload="beforeUpload"
+              listType="picture"
+              :showUploadList="false"
+            >
+              <p>点击、拖动、或者粘贴图片</p>
+            </a-upload-dragger>
+          </div>
+          <div class="up-img-preview">
+            <!--  -->
+            <img :src="upLocationImage" alt="预览图片" :hidden="previewLocationImgHidden" />
+          </div>
+
         </div>
+
+        
       </a-col>
 
       <a-col :lg="3" :md="4" :sm="6">
@@ -31,11 +52,46 @@
           <div class="divider"></div>
           <div class="btn-group">
             <a-button @click="handleUpload" :loading="isOCRing">识别</a-button>
+            <a-button @click="handleUploadSave" :loading="isOCRing">识别并存储</a-button>
+            <a-button @click="handleUploadDiff" :loading="isOCRing">识别并比较</a-button>
+            <a-button @click="getImgList" :loading="isOCRing">获取图片列表</a-button>
             <!-- 压缩图片、显示检测后的图片、显示原始值、显示纯文字 -->
             <div style="margin-top:1rem;">
               <p>
+                选择标签位置:
+                <a-select default-value="加拿大安全认证_左B柱侧面上方" style="width: 220px" @change="handleOrcModelChange">
+                 <a-select-option value="加拿大安全认证_左B柱侧面上方">
+                  加拿大安全认证_左B柱侧面上方
+                 </a-select-option>
+                 <a-select-option value="北美Loose Item_左侧后三角窗后部">
+                  北美Loose Item_左侧后三角窗后部
+                 </a-select-option>
+                 <a-select-option value="三角窗标签_左侧三角窗">
+                  三角窗标签_左侧三角窗
+                 </a-select-option>
+                 <a-select-option value="北美安全认证_左B柱侧面上方">
+                  北美安全认证_左B柱侧面上方
+                 </a-select-option>
+                 <a-select-option value="北美胎压_左侧B柱侧面下方">
+                  北美胎压_左侧B柱侧面下方
+                 </a-select-option>
+                 <a-select-option value="加拿大安全警示标签_右前车门玻璃内侧">
+                  加拿大安全警示标签_右前车门玻璃内侧
+                 </a-select-option>
+                 <a-select-option value="中东燃油排放消耗标识_右后车门玻璃内侧">
+                  中东燃油排放消耗标识_右后车门玻璃内侧
+                 </a-select-option>
+                 <a-select-option value="加注指示标识_油箱盖内">
+                  加注指示标识_油箱盖内
+                 </a-select-option>
+                 <a-select-option value="国内燃油排放消耗标识_前挡右上方">
+                  国内燃油排放消耗标识_前挡右上方
+                 </a-select-option>
+                </a-select>
+              </p>
+              <p>
                 选择模型:
-                <a-select default-value="ch_ppocr_mobile_v2.0_xx" style="width: 220px" @change="handleOrcModelChange">
+                <a-select default-value="ch_ppocr_mobile_v2.0_xx" style="width: 220px" @change="handleLabelLocationChange">
                  <a-select-option value="ch_ppocr_mobile_v2.0_xx">
                    ch_ppocr_mobile_v2.0_xx
                  </a-select-option>
@@ -128,6 +184,7 @@ export default {
   data: function() {
     return {
       upImage: '', // 上传后的图片预览地址
+      upLocationImage: '', // 标签位置上传后的图片预览地址
       fileList: [], // 上传图片的列表
       detectedImg: '', // 检测后的图片
       ocrRaw: ``, // 返回的原始结果
@@ -135,6 +192,7 @@ export default {
 
       uploading: false, //状态 原生 上传控件的状态
       previewImgHidden: true, // 状态 预览图片是否隐藏
+      previewLocationImgHidden: true, // 状态 标签位置预览图片是否隐藏
       isOCRing: false, // 状态 是否在识别中
       hiddenDetectedImg: true, //状态  是否显示检测后的图片
       hiddenOcrRaw: true, // 状态  是否显示返回的原始结果
@@ -163,7 +221,8 @@ export default {
     handleChange(info) {
       const status = info.file.status
       if (status !== 'uploading') {
-        this.$data.fileList = [info.file]
+        // this.$data.fileList = [info.file]
+        this.$data.fileList.push(info.file)
         this.$data.upImage = getObjectURL(info.file)
         this.$data.previewImgHidden = false
         console.log('success')
@@ -176,8 +235,27 @@ export default {
         console.log('error')
       }
     },
+    handleLabelLocationPicChange(info) {
+      const status = info.file.status
+      if (status !== 'uploading') {
+        // this.$data.fileList = [info.file]
+        this.$data.fileList.push(info.file)
+        this.$data.upLocationImage = getObjectURL(info.file)
+        this.$data.previewLocationImgHidden = false
+        console.log('success')
+      }
+      if (status === 'done') {
+        console.log('done')
+        this.$message.success(`${info.file.name} file uploaded successfully.`)
+      } else if (status === 'error') {
+        this.$message.error(`${info.file.name} file upload failed.`)
+        console.log('error')
+      }
+    },
     beforeUpload(file) {
-      this.fileList = [file]
+      // this.fileList = [file]
+      // this.fileList.push(file)
+      file
       return false
     },
     handleUpload() {
@@ -185,7 +263,7 @@ export default {
         this.$message.warning('还没有选择图片')
         return
       }
-
+      console.log(this.fileList.length)
       const formData = new FormData()
       this.fileList.forEach(file => {
         formData.append('img_upload', file)
@@ -202,6 +280,8 @@ export default {
       this.uploading = true
 
       const _this = this
+
+      this.$data.fileList = []
       axios({
         url: '/api/ocr',
         method: 'post',
@@ -264,8 +344,237 @@ export default {
           _this.$data.hiddenOcrRaw = true
           _this.$data.hiddenOcrText = true
         })
-    }
+    },
+    handleUploadSave() {
+      if (this.fileList.length < 1) {
+        this.$message.warning('还没有选择图片')
+        return
+      }
+      console.log(this.fileList.length)
+      const formData = new FormData()
+      this.fileList.forEach(file => {
+        formData.append('img_upload', file)
+      })
+      if (this.$data.hiddenCompressBox === true){
+        formData.append('compress_size',0)
+      }else{
+        formData.append('compress_size',this.$data.comporessSize)
+      }
+
+      formData.append('ocr_model',this.$data.ocrModel)
+      formData.append('vin','5LMPJ8KA7RJ739205')
+
+      this.isOCRing = true
+      this.uploading = true
+
+      const _this = this
+
+      this.$data.fileList = []
+      axios({
+        url: '/api/save',
+        method: 'post',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        transformRequest: {},
+        data: formData
+      })
+        .then(function(response) {
+          _this.$data.detectedImg = response.data['data']['img_detected']
+
+          _this.$data.ocrRaw = ''
+          _this.$data.ocrText = ''
+
+          let nextLineHeight = 0 // 下一行的高度
+
+          const raw_data = response.data['data']['raw_out']
+          for (let i = 0; i < raw_data.length; i++) {
+            _this.$data.ocrRaw += JSON.stringify(raw_data[i]) + '\r'
+
+            // 合并同一行的数据
+            if (i < raw_data.length - 1) {
+              nextLineHeight = raw_data[i + 1][0][1]
+              // 判断判断同一行的依据是 两段的行高差 小于 行高的一半
+              if (
+                Math.abs(raw_data[i][0][1] - nextLineHeight) <
+                raw_data[i][0][3] / 2
+              ) {
+                _this.$data.ocrText += raw_data[i][1] + ' '
+              } else {
+                _this.$data.ocrText += raw_data[i][1] + '\r'
+              }
+            } else {
+              _this.$data.ocrText += raw_data[i][1]
+            }
+
+            // _this.$data.ocrText += raw_data[i][1] + '\r'
+          }
+
+          _this.$data.uploading = false
+          _this.$data.isOCRing = false
+          _this.$data.hiddenDetectedImg = false
+          _this.$data.hiddenOcrRaw = false
+          _this.$data.hiddenOcrText = false
+
+          _this.$message.success(
+            '成功! 耗时：' + response.data['data']['speed_time'] + ' 秒'
+          )
+        })
+        .catch(function(error) {
+          // console.log(error)
+          _this.$data.isOCRing = false
+
+          const errorInfo = error.response['msg'] || error.message
+          _this.$message.error('错误：' + errorInfo)
+
+          _this.$data.hiddenDetectedImg = true
+          _this.$data.hiddenOcrRaw = true
+          _this.$data.hiddenOcrText = true
+        })
+    },
+    handleUploadDiff() {
+      if (this.fileList.length < 1) {
+        this.$message.warning('还没有选择图片')
+        return
+      }
+      console.log(this.fileList.length)
+      const formData = new FormData()
+      this.fileList.forEach(file => {
+        formData.append('img_upload', file)
+      })
+      if (this.$data.hiddenCompressBox === true){
+        formData.append('compress_size',0)
+      }else{
+        formData.append('compress_size',this.$data.comporessSize)
+      }
+
+      formData.append('ocr_model',this.$data.ocrModel)
+      formData.append('id',4)
+
+      this.isOCRing = true
+      this.uploading = true
+
+      const _this = this
+
+      this.$data.fileList = []
+      axios({
+        url: '/api/diff',
+        method: 'post',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        transformRequest: {},
+        data: formData
+      })
+        .then(function(response) {
+          _this.$data.detectedImg = response.data['data']['img_detected']
+
+          _this.$data.ocrRaw = response.data['code']
+          _this.$data.ocrText = ''
+          
+
+          // let nextLineHeight = 0 // 下一行的高度
+
+          // const raw_data = response.data['data']['raw_out']
+          // for (let i = 0; i < raw_data.length; i++) {
+          //   _this.$data.ocrRaw += JSON.stringify(raw_data[i]) + '\r'
+
+          //   // 合并同一行的数据
+          //   if (i < raw_data.length - 1) {
+          //     nextLineHeight = raw_data[i + 1][0][1]
+          //     // 判断判断同一行的依据是 两段的行高差 小于 行高的一半
+          //     if (
+          //       Math.abs(raw_data[i][0][1] - nextLineHeight) <
+          //       raw_data[i][0][3] / 2
+          //     ) {
+          //       _this.$data.ocrText += raw_data[i][1] + ' '
+          //     } else {
+          //       _this.$data.ocrText += raw_data[i][1] + '\r'
+          //     }
+          //   } else {
+          //     _this.$data.ocrText += raw_data[i][1]
+          //   }
+
+          //   // _this.$data.ocrText += raw_data[i][1] + '\r'
+          // }
+
+          _this.$data.uploading = false
+          _this.$data.isOCRing = false
+          _this.$data.hiddenDetectedImg = false
+          _this.$data.hiddenOcrRaw = false
+          _this.$data.hiddenOcrText = false
+
+          _this.$message.success(
+            '成功! 耗时：' + response.data['data']['speed_time'] + ' 秒'
+          )
+        })
+        .catch(function(error) {
+          // console.log(error)
+          _this.$data.isOCRing = false
+
+          const errorInfo = error.response['msg'] || error.message
+          _this.$message.error('错误：' + errorInfo)
+
+          _this.$data.hiddenDetectedImg = true
+          _this.$data.hiddenOcrRaw = true
+          _this.$data.hiddenOcrText = true
+        })
+    },
+    getImgList() {
+     
+      const formData = new FormData()
+
+
+      formData.append('vin','5LMPJ8KA7RJ739205')
+
+      this.isOCRing = true
+      this.uploading = true
+
+      const _this = this
+
+      axios({
+        url: '/api/images',
+        method: 'post',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        transformRequest: {},
+        data: formData
+      })
+        .then(function(response) {
+          _this.$data.detectedImg = response.data['data']['images'][0]['label_img']
+
+          _this.$data.ocrRaw = ''
+          _this.$data.ocrText = ''
+
+          _this.$data.uploading = false
+          _this.$data.isOCRing = false
+          _this.$data.hiddenDetectedImg = false
+          _this.$data.hiddenOcrRaw = false
+          _this.$data.hiddenOcrText = false
+
+          _this.$message.success(
+            '成功! 耗时：' + response.data['data']['speed_time'] + ' 秒'
+          )
+        })
+        .catch(function(error) {
+          // console.log(error)
+          _this.$data.isOCRing = false
+
+          const errorInfo = error.response['msg'] || error.message
+          _this.$message.error('错误：' + errorInfo)
+
+          _this.$data.hiddenDetectedImg = true
+          _this.$data.hiddenOcrRaw = true
+          _this.$data.hiddenOcrText = true
+        })
+    },
+
   },
+  
   watch: {
     fileList: function(newVal, oldVal) {
       if (newVal.length <= 0) {

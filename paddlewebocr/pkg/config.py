@@ -1,6 +1,8 @@
 from typing import List
 
-from pydantic import BaseSettings, AnyHttpUrl
+from pydantic import AnyHttpUrl
+# from pydantic import BaseSettings # OLD
+from pydantic_settings import BaseSettings # NEW
 
 
 class Settings(BaseSettings):
