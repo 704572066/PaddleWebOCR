@@ -91,7 +91,7 @@
               </p>
               <p>
                 选择模型:
-                <a-select default-value="ch_ppocr_mobile_v2.0_xx" style="width: 220px" @change="handleOrcModelChange">
+                <a-select default-value="ch_ppocr_server_v2.0_xx" style="width: 220px" @change="handleOrcModelChange">
                  <a-select-option value="ch_ppocr_mobile_v2.0_xx">
                    ch_ppocr_mobile_v2.0_xx
                  </a-select-option>
