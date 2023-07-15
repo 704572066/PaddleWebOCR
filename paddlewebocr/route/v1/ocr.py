@@ -42,9 +42,16 @@ async def ocr(img_upload: List[UploadFile] = File(None),
 
     texts = text_ocr(img, ocr_model)
     # 去掉置信度小于0.9的文本
-    for i, text in enumerate(texts):
-        if text[1][1] < confidence:
+    i = 0
+    while i < len(texts):
+        if texts[i][1][1] < confidence:
             texts.pop(i)
+            i -= 1
+        else:
+            i += 1
+    # for i, text in enumerate(texts):
+    #     if text[1][1] < confidence:
+    #         texts.pop(i)
     img_drawed = draw_box_on_image(img.copy(), texts)
     img_drawed_b64 = convert_image_to_b64(img_drawed)
 
