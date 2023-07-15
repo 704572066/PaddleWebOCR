@@ -127,6 +127,17 @@
                 />
                 <!-- @change="onChange" -->
               </p>
+              <p>
+                置信度大于:
+                <a-input-number
+                  style="width:auto;max-width:45%;"
+                  id="confidenceInput"
+                  size="small"
+                  v-model="confidence"
+                  :min="0"
+                />
+                <!-- @change="onChange" -->
+              </p>
             </div>
           </div>
 
@@ -198,6 +209,7 @@ export default {
       hiddenOcrRaw: true, // 状态  是否显示返回的原始结果
       hiddenOcrText: true, // 状态 是否显示经过提取后的文字结果
       comporessSize: 1600,
+      confidence: 0, // 置信度
       ocrModel: 1600,
       hiddenCompressBox:false
     }
@@ -273,8 +285,8 @@ export default {
       }else{
         formData.append('compress_size',this.$data.comporessSize)
       }
-
       formData.append('ocr_model',this.$data.ocrModel)
+      formData.append('confidence',this.$data.confidence)
       console.log(this.$data.ocrModel)
       this.isOCRing = true
       this.uploading = true
@@ -360,7 +372,7 @@ export default {
       }else{
         formData.append('compress_size',this.$data.comporessSize)
       }
-
+      formData.append('confidence',this.$data.confidence)
       formData.append('ocr_model',this.$data.ocrModel)
       formData.append('vin','5LMPJ8KA7RJ739205')
 
@@ -448,7 +460,7 @@ export default {
       }else{
         formData.append('compress_size',this.$data.comporessSize)
       }
-
+      formData.append('confidence',this.$data.confidence)
       formData.append('ocr_model',this.$data.ocrModel)
       formData.append('id',5)
 

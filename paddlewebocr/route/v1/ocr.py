@@ -24,6 +24,7 @@ router = APIRouter()
 async def ocr(img_upload: List[UploadFile] = File(None),
               img_b64: str = Form(None),
               compress_size: int = Form(None),
+              confidence: float = Form(None),
               ocr_model: str = Form(None)):
     start_time = time.time()
     img_bytes = img_upload[0].file.read()
@@ -40,6 +41,10 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     img = compress_image(img, compress_size)
 
     texts = text_ocr(img, ocr_model)
+    # 去掉置信度小于0.9的文本
+    for i, text in enumerate(texts):
+        if text[1][1] < confidence:
+            texts.pop(i)
     img_drawed = draw_box_on_image(img.copy(), texts)
     img_drawed_b64 = convert_image_to_b64(img_drawed)
 
@@ -77,6 +82,7 @@ async def save(img_upload: List[UploadFile] = File(None),
               vin: str = Form(None),
               img_b64: str = Form(None),
               compress_size: int = Form(None),
+              confidence: float = Form(None),
               ocr_model: str = Form(None)):
     start_time = time.time()
     img_bytes = img_upload[0].file.read()
@@ -95,7 +101,7 @@ async def save(img_upload: List[UploadFile] = File(None),
     texts = text_ocr(img, ocr_model)
     # 去掉置信度小于0.9的文本
     for i, text in enumerate(texts):
-        if text[1][1] < 0.9:
+        if text[1][1] < confidence:
             texts.pop(i)
     img_drawed = draw_box_on_image(img.copy(), texts)
     img_drawed_b64 = convert_image_to_b64(img_drawed)
@@ -113,6 +119,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
               img_b64: str = Form(None),
               compress_size: int = Form(None),
               id: int = Form(None),
+              confidence: float = Form(None),
               ocr_model: str = Form(None)):
     start_time = time.time()
     img_bytes = img_upload[0].file.read()
@@ -131,7 +138,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     texts = text_ocr(img, ocr_model)
     # 去掉置信度小于0.8的文本
     for i, text in enumerate(texts):
-        if text[1][1] < 0.8:
+        if text[1][1] < confidence:
             texts.pop(i)
     # img_drawed = draw_box_on_image(img.copy(), texts)
     # img_drawed_b64 = convert_image_to_b64(img_drawed)
@@ -149,7 +156,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
                     texts.pop(i)
         else:
             for i, text in enumerate(texts):
-                if i<length2 and text[1][0] == texts2[i] :
+                if i<length2 and text[1][0] == texts2[i]:
                     texts.pop(i)
         img_drawed = draw_box_on_image(img.copy(), texts)
         img_drawed_b64 = convert_image_to_b64(img_drawed)
