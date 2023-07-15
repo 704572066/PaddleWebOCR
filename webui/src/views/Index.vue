@@ -59,7 +59,7 @@
             <div style="margin-top:1rem;">
               <p>
                 选择标签位置:
-                <a-select default-value="加拿大安全认证_左B柱侧面上方" style="width: 220px" @change="handleLabelLocationChangehandleOrcModelChange">
+                <a-select default-value="加拿大安全认证_左B柱侧面上方" style="width: 220px" @change="handleLabelLocationChange">
                  <a-select-option value="加拿大安全认证_左B柱侧面上方">
                   加拿大安全认证_左B柱侧面上方
                  </a-select-option>
@@ -210,7 +210,7 @@ export default {
       hiddenOcrText: true, // 状态 是否显示经过提取后的文字结果
       comporessSize: 1600,
       confidence: 0, // 置信度
-      ocrModel: 1600,
+      ocrModel: 'ch_ppocr_server_v2.0_xx',
       hiddenCompressBox:false
     }
   },
