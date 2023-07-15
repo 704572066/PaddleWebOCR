@@ -93,9 +93,9 @@ async def save(img_upload: List[UploadFile] = File(None),
     img = compress_image(img, compress_size)
 
     texts = text_ocr(img, ocr_model)
-    # 去掉置信度小于0.8的文本
+    # 去掉置信度小于0.9的文本
     for i, text in enumerate(texts):
-        if text[1][1] < 0.8:
+        if text[1][1] < 0.9:
             texts.pop(i)
     img_drawed = draw_box_on_image(img.copy(), texts)
     img_drawed_b64 = convert_image_to_b64(img_drawed)
