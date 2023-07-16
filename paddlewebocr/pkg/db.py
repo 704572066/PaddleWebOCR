@@ -10,7 +10,7 @@ def save2db(vin, img1, img2, text):
         # fp = open("./test.jpg")
         # img = fp.read()
         # mysql连接
-        conn = MySQLdb.connect(host='101.37.32.216', port=3306, user='root', passwd='Bjz2023@', db='test')
+        conn = MySQLdb.connect(host='192.168.11.102', port=20534, user='root', passwd='Zju2023@', db='test')
         cursor = conn.cursor()
         # 注意使用Binary()函数来指定存储的是二进制
         # cursor.execute("INSERT INTO ford values(%s,%s,%s,%s)" % (vin,img1,img2,text))
@@ -35,7 +35,7 @@ def get_imgs(vin):
         # fp = open("./test.jpg")
         # img = fp.read()
         # mysql连接
-        conn = MySQLdb.connect(host='101.37.32.216', port=3306, user='root', passwd='Bjz2023@', db='test')
+        conn = MySQLdb.connect(host='192.168.11.102', port=20534, user='root', passwd='Zju2023@', db='test')
         cursor = conn.cursor()
         # 注意使用Binary()函数来指定存储的是二进制
         # cursor.execute("INSERT INTO ford values(%s,%s,%s,%s)" % (vin,img1,img2,text))
@@ -64,7 +64,7 @@ def get_texts(id):
         # fp = open("./test.jpg")
         # img = fp.read()
         # mysql连接
-        conn = MySQLdb.connect(host='101.37.32.216', port=3306, user='root', passwd='Bjz2023@', db='test')
+        conn = MySQLdb.connect(host='192.168.11.102', port=20534, user='root', passwd='Zju2023@', db='test')
         cursor = conn.cursor()
         # 注意使用Binary()函数来指定存储的是二进制
         # cursor.execute("INSERT INTO ford values(%s,%s,%s,%s)" % (vin,img1,img2,text))

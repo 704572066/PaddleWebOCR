@@ -117,7 +117,7 @@ async def save(img_upload: List[UploadFile] = File(None),
     img_drawed = draw_box_on_image(img.copy(), texts)
     img_drawed_b64 = convert_image_to_b64(img_drawed)
 
-    save2db(vin,b64encode(img_bytes),b64encode(img_upload[1].file.read()),'|'.join(list(map(lambda x: x[1][0], texts))))
+    save2db(vin,convert_image_to_b64(img),b64encode(img_upload[1].file.read()),'|'.join(list(map(lambda x: x[1][0], texts))))
     data = {'code': 0, 'msg': '成功',
             'data': {'img_detected': 'data:image/jpeg;base64,' + img_drawed_b64,
                      'raw_out': list(map(lambda x: [x[0], x[1][0], x[1][1]], texts)),
