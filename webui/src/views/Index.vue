@@ -462,7 +462,7 @@ export default {
       }
       formData.append('confidence',this.$data.confidence)
       formData.append('ocr_model',this.$data.ocrModel)
-      formData.append('id',5)
+      formData.append('id',23)
 
       this.isOCRing = true
       this.uploading = true

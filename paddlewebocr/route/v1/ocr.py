@@ -1,3 +1,4 @@
+import re
 import time
 import orjson
 import logging
@@ -144,36 +145,46 @@ async def ocr(img_upload: List[UploadFile] = File(None),
 
     img = rotate_image(img)
     img = img.convert("RGB")
+    # 不压缩图片
     img = compress_image(img, compress_size)
 
     texts = text_ocr(img, ocr_model)
+    print('|'.join(list(map(lambda x: x[1][0], texts))))
     # 去掉置信度小于0.8的文本
     i = 0
     while i < len(texts):
-        if texts[i][1][1] < confidence:
+        if texts[i][1][1] < confidence or (texts[i][1][1] > confidence and texts[i][1][0] == 'jliao'):
             texts.pop(i)
             i -= 1
         else:
             i += 1
+    print('|'.join(list(map(lambda x: x[1][0], texts))))
     # img_drawed = draw_box_on_image(img.copy(), texts)
     # img_drawed_b64 = convert_image_to_b64(img_drawed)
-    result1 = '|'.join(list(map(lambda x: x[1][0], texts)))
-    result2 = get_texts(id)
-    if result1 == result2[0]:
+    result1 = re.sub(r'[\s,]*', '', '|'.join(list(map(lambda x: x[1][0], texts))))
+
+    result2 = re.sub(r'[\s,]*', '', get_texts(id)[0])
+    print(result1+"\n"+result2)
+    if result1 == result2:
         data = {'code': 0, 'msg': '成功', 'data': {'speed_time': round(time.time() - start_time, 2)}}
     else:
-        texts2 = list(map(str, result2[0].split('|')))
-        length2 = len(texts2)
-        length1 = len(texts)
+        list2 = list(map(str, result2.split('|')))
+        list1 = list(map(str, result1.split('|')))
+        length2 = len(list2)
+        length1 = len(list1)
         if length1 <= length2:
-            for i, text in enumerate(texts):
-                if text[1][0] == texts2[i]:
-                    texts.pop(i)
+            for i, text in enumerate(list1):
+                if text != list2[i]:
+                    print(text)
+                    print(list2[i])
+                    img_drawed = draw_one_box_on_image(img, texts[i][0])
+                    break
         else:
-            for i, text in enumerate(texts):
-                if i<length2 and text[1][0] == texts2[i]:
-                    texts.pop(i)
-        img_drawed = draw_box_on_image(img.copy(), texts)
+            for i, text in enumerate(list1):
+                if i<length2 and text != list2[i]:
+                    img_drawed = draw_one_box_on_image(img, texts[i][0])
+                    break
+        # img_drawed = draw_box_on_image(img.copy(), texts)
         img_drawed_b64 = convert_image_to_b64(img_drawed)
         data = {'code': 1, 'msg': '失败', 'data':{'img_detected':'data:image/jpeg;base64,' + img_drawed_b64,
                 'speed_time': round(time.time() - start_time, 2)}}

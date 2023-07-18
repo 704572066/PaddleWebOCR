@@ -44,6 +44,18 @@ def draw_box_on_image(img: Image, texts: list) -> Image:
     return img
 
 
+def draw_one_box_on_image(img: Image, text) -> Image:
+    img_draw = ImageDraw.Draw(img)
+    print(text[0])
+    colors = ['red', 'green', 'blue', "purple"]
+    # for line in texts:
+    points = [tuple(point) for point in text]
+    # points.append(points[0])
+    # img_draw.polygon(points, outline=colors[random.randint(0, len(colors) - 1)])
+    img_draw.line(points, width=15, fill=colors[random.randint(0, len(colors) - 1)])
+    return img
+
+
 def convert_image_to_bytes(img: Image) -> bytes:
     img_byte = BytesIO()
     img.save(img_byte, format='JPEG')
