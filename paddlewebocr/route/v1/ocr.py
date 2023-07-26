@@ -1,5 +1,8 @@
 import re
 import time
+
+import cv2
+import numpy as np
 import orjson
 import logging
 from typing import Any
@@ -8,7 +11,9 @@ from fastapi.responses import ORJSONResponse, JSONResponse
 from paddlewebocr.pkg.util import *
 from paddlewebocr.pkg.ocr import text_ocr
 from paddlewebocr.pkg.db import save2db, get_imgs, get_texts
-
+from paddlewebocr.pkg.edge import get_receipt_contours
+from paddlewebocr.pkg.orientation import orientation_detect
+from paddlewebocr.pkg.pair import texts_pair
 from typing import List
 
 class MyORJSONResponse(ORJSONResponse):
@@ -105,7 +110,9 @@ async def save(img_upload: List[UploadFile] = File(None),
     img = rotate_image(img)
     img = img.convert("RGB")
     img = compress_image(img, compress_size)
-
+    # img = item_extract(np.array(img))
+    img = get_receipt_contours(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
+    img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
     texts = text_ocr(img, ocr_model)
     # 去掉置信度小于0.9的文本
     i = 0
@@ -135,6 +142,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
               ocr_model: str = Form(None)):
     start_time = time.time()
     img_bytes = img_upload[0].file.read()
+    print(len(img_bytes))
     if img_upload is not None:
         img = convert_bytes_to_image(img_bytes)
     elif img_b64 is not None:
@@ -147,47 +155,60 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     img = img.convert("RGB")
     # 不压缩图片
     img = compress_image(img, compress_size)
-
-    texts = text_ocr(img, ocr_model)
-    print('|'.join(list(map(lambda x: x[1][0], texts))))
-    # 去掉置信度小于0.8的文本
-    i = 0
-    while i < len(texts):
-        if texts[i][1][1] < confidence or (texts[i][1][1] > confidence and texts[i][1][0] == 'jliao'):
-            texts.pop(i)
-            i -= 1
-        else:
-            i += 1
-    print('|'.join(list(map(lambda x: x[1][0], texts))))
-    # img_drawed = draw_box_on_image(img.copy(), texts)
-    # img_drawed_b64 = convert_image_to_b64(img_drawed)
-    result1 = re.sub(r'[\s,]*', '', '|'.join(list(map(lambda x: x[1][0], texts))))
-
-    result2 = re.sub(r'[\s,]*', '', get_texts(id)[0])
-    print(result1+"\n"+result2)
-    if result1 == result2:
-        data = {'code': 0, 'msg': '成功', 'data': {'speed_time': round(time.time() - start_time, 2)}}
+    # img = item_extract(np.array(img))
+    img = get_receipt_contours(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
+    if img is None:
+        data = {'code': 2, 'msg': '图片不合规,请重新拍摄'}
     else:
-        list2 = list(map(str, result2.split('|')))
-        list1 = list(map(str, result1.split('|')))
-        length2 = len(list2)
-        length1 = len(list1)
-        if length1 <= length2:
-            for i, text in enumerate(list1):
-                if text != list2[i]:
-                    print(text)
-                    print(list2[i])
-                    img_drawed = draw_one_box_on_image(img, texts[i][0])
-                    break
-        else:
-            for i, text in enumerate(list1):
-                if i<length2 and text != list2[i]:
-                    img_drawed = draw_one_box_on_image(img, texts[i][0])
-                    break
+        img = orientation_detect(img)
+        img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
+        texts = text_ocr(img, ocr_model)
+        print('|'.join(list(map(lambda x: x[1][0], texts))))
+        # 去掉置信度小于0.8的文本
+        i = 0
+        while i < len(texts):
+            if texts[i][1][1] < confidence or (texts[i][1][1] > confidence and texts[i][1][0] == 'jliao'):
+                texts.pop(i)
+                i -= 1
+            else:
+                i += 1
+        print('|'.join(list(map(lambda x: x[1][0], texts))))
         # img_drawed = draw_box_on_image(img.copy(), texts)
-        img_drawed_b64 = convert_image_to_b64(img_drawed)
-        data = {'code': 1, 'msg': '失败', 'data':{'img_detected':'data:image/jpeg;base64,' + img_drawed_b64,
-                'speed_time': round(time.time() - start_time, 2)}}
+        # img_drawed_b64 = convert_image_to_b64(img_drawed)
+        result1 = re.sub(r'[\s,]*', '', '|'.join(list(map(lambda x: x[1][0], texts))))
+
+        result2 = re.sub(r'[\s,]*', '', get_texts(id)[0])
+        print(result1+"\n"+result2)
+        if result1 == result2:
+            data = {'code': 0, 'msg': '成功', 'data': {'speed_time': round(time.time() - start_time, 2)}}
+        else:
+            # list2 = list(map(str, result2.split('|')))
+            # list1 = list(map(str, result1.split('|')))
+            # length2 = len(list2)
+            # length1 = len(list1)
+            percentage, filter_texts = texts_pair(texts, get_texts(id)[0])
+            if percentage > 0.3:
+                img_drawed = draw_box_on_image(img, filter_texts)
+                img_drawed_b64 = convert_image_to_b64(img_drawed)
+                data = {'code': 1, 'msg': '失败', 'data': {'img_detected': 'data:image/jpeg;base64,' + img_drawed_b64,
+                                                           'speed_time': round(time.time() - start_time, 2)}}
+                # list(map(lambda x: x, texts))
+            else:
+                data = {'code': 0, 'msg': '成功', 'data': {'percentage': percentage,'speed_time': round(time.time() - start_time, 2)}}
+            # if length1 <= length2:
+            #     for i, text in enumerate(list1):
+            #         if text != list2[i]:
+            #             print(text)
+            #             print(list2[i])
+            #             img_drawed = draw_one_box_on_image(img, texts[i][0])
+            #             break
+            # else:
+            #     for i, text in enumerate(list1):
+            #         if i<length2 and text != list2[i]:
+            #             img_drawed = draw_one_box_on_image(img, texts[i][0])
+            #             break
+            # img_drawed = draw_box_on_image(img.copy(), texts)
+
 
     return MyORJSONResponse(content=data)
 
