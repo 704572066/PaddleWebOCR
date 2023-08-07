@@ -13,7 +13,7 @@ from paddlewebocr.pkg.ocr import text_ocr
 from paddlewebocr.pkg.db import save2db, get_imgs, get_texts
 from paddlewebocr.pkg.edge import get_receipt_contours
 from paddlewebocr.pkg.orientation import orientation_detect
-from paddlewebocr.pkg.pair import texts_pair
+from paddlewebocr.pkg.pair import texts_pair_algorithm_a, texts_pair_algorithm_b
 from typing import List
 
 class MyORJSONResponse(ORJSONResponse):
@@ -192,7 +192,15 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         # list1 = list(map(str, result1.split('|')))
         # length2 = len(list2)
         # length1 = len(list1)
-        percentage, filter_texts = texts_pair(texts, get_texts(id)[0])
+        percentage_a, filter_texts_a = texts_pair_algorithm_a(texts, get_texts(id)[0])
+        percentage_b, filter_texts_b = texts_pair_algorithm_b(texts, get_texts(id)[0])
+        if percentage_a < percentage_b:
+            percentage = percentage_a
+            filter_texts = filter_texts_a
+        else:
+            percentage = percentage_b
+            filter_texts = filter_texts_b
+
         if percentage > 0.3:
             img_drawed = draw_box_on_image(img, filter_texts)
             img_drawed_b64 = convert_image_to_b64(img_drawed)
