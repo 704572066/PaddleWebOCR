@@ -93,6 +93,6 @@ def texts_pair_algorithm_b(a, b):
 # print(result1)
 # p = {'ppp'}
 # print(result1.isdisjoint(p))
-
-result1 = re.sub(r'[\s,()（）]*', '', "MED.BY FORD MOTOR CO.|DATE:07/23|GVWR/PNBV:2545KG（5610LB)|FRONT GAWR/PNBEAV:1290KG(2845LB）|REAR GAWR/PNBEAR:1350KG(2980 LB)|VIN:5LMPJ8KA7RJ739205|COMPLIES:ICES/NMB-002")
-print(result1)
+#
+# result1 = re.sub(r'[\s,()（）]*', '', "MED.BY FORD MOTOR CO.|DATE:07/23|GVWR/PNBV:2545KG（5610LB)|FRONT GAWR/PNBEAV:1290KG(2845LB）|REAR GAWR/PNBEAR:1350KG(2980 LB)|VIN:5LMPJ8KA7RJ739205|COMPLIES:ICES/NMB-002")
+# print(result1)

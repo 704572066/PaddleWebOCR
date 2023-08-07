@@ -169,11 +169,12 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         data = {'code': 2, 'msg': '图片不合规,提取不到文字,请重新拍摄'}
         return MyORJSONResponse(content=data)
 
+    texts_confidence = get_texts(id)
     print('|'.join(list(map(lambda x: x[1][0], texts))))
     # 去掉置信度小于0.8的文本
     i = 0
     while i < len(texts):
-        if texts[i][1][1] < confidence:
+        if texts[i][1][1] < texts_confidence[1]:
             texts.pop(i)
             i -= 1
         else:
@@ -183,7 +184,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     # img_drawed_b64 = convert_image_to_b64(img_drawed)
     result1 = re.sub(r'[\s,]*', '', '|'.join(list(map(lambda x: x[1][0], texts))))
 
-    result2 = re.sub(r'[\s,]*', '', get_texts(id)[0])
+    result2 = re.sub(r'[\s,]*', '', texts_confidence[0])
     print(result1+"\n"+result2)
     if result1 == result2:
         data = {'code': 0, 'msg': '成功', 'data': {'speed_time': round(time.time() - start_time, 2)}}
@@ -192,8 +193,8 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         # list1 = list(map(str, result1.split('|')))
         # length2 = len(list2)
         # length1 = len(list1)
-        percentage_a, filter_texts_a = texts_pair_algorithm_a(texts, get_texts(id)[0])
-        percentage_b, filter_texts_b = texts_pair_algorithm_b(texts, get_texts(id)[0])
+        percentage_a, filter_texts_a = texts_pair_algorithm_a(texts, texts_confidence[0])
+        percentage_b, filter_texts_b = texts_pair_algorithm_b(texts, texts_confidence[0])
         if percentage_a < percentage_b:
             percentage = percentage_a
             filter_texts = filter_texts_a

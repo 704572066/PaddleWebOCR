@@ -69,7 +69,7 @@ def get_texts(id):
         # 注意使用Binary()函数来指定存储的是二进制
         # cursor.execute("INSERT INTO ford values(%s,%s,%s,%s)" % (vin,img1,img2,text))
 
-        sql = "select text from ford where id = %s"
+        sql = "select text,confidence from ford where id = %s"
 
         # cursor.execute(sql)
         # value = (id,id)
