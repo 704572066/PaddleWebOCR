@@ -161,7 +161,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         data = {'code': 2, 'msg': '图片不合规,提取不到标签,请重新拍摄'}
         return MyORJSONResponse(content=data)
 
-    img = orientation_detect(img)
+    # img = orientation_detect(img)
     img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
     texts = text_ocr(img, ocr_model)
 

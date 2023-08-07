@@ -59,9 +59,9 @@ def texts_pair_algorithm_a(a, b):
     return percentage, filter_texts
 
 def texts_pair_algorithm_b(a, b):
-    result1 = re.sub(r'[\s,()（）]*', '', '|'.join(list(map(lambda x: x[1][0], a))))
+    result1 = re.sub(r'[\s,()（）\']*', '', '|'.join(list(map(lambda x: x[1][0], a))))
 
-    result2 = re.sub(r'[\s,()（）]*', '', b)
+    result2 = re.sub(r'[\s,()（）\']*', '', b)
     list2 = list(map(str, result2.split('|')))
     list1 = list(map(str, result1.split('|')))
 
@@ -72,7 +72,7 @@ def texts_pair_algorithm_b(a, b):
     remove_b = set_b - set_a
     print(remove_b)
     percentage = len(remove_b) / len(set_b)
-    filter_texts = list(filter(lambda x: re.sub(r'[\s,()（）]*', '', x[1][0]) in remove_a, a))
+    filter_texts = list(filter(lambda x: re.sub(r'[\s,()（）\']*', '', x[1][0]) in remove_a, a))
     print(filter_texts)
     return percentage, filter_texts
 # for item in remove_b:
@@ -94,5 +94,5 @@ def texts_pair_algorithm_b(a, b):
 # p = {'ppp'}
 # print(result1.isdisjoint(p))
 #
-# result1 = re.sub(r'[\s,()（）]*', '', "MED.BY FORD MOTOR CO.|DATE:07/23|GVWR/PNBV:2545KG（5610LB)|FRONT GAWR/PNBEAV:1290KG(2845LB）|REAR GAWR/PNBEAR:1350KG(2980 LB)|VIN:5LMPJ8KA7RJ739205|COMPLIES:ICES/NMB-002")
+# result1 = re.sub(r'[\s,()（）\']*', '', "LES OBJETS DANS LE RETROVISEUR|SONTPLUS PRESQU'ILS|NE LE SEMBLENT|YHU5A-214A96-AA")
 # print(result1)
