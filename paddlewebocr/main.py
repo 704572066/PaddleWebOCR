@@ -59,7 +59,7 @@ app.mount("/", StaticFiles(directory=os.path.join(".", "webui", "dist"), html=Tr
 # @click.option("--debug", default=True, help="debug mode")
 def main(bind, port):
     import uvicorn
-    uvicorn.run(app, host=bind, port=port, debug=True)
+    uvicorn.run(app, host=bind, port=port)
 
 
 if __name__ == "__main__":

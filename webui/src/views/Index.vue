@@ -89,7 +89,7 @@
                  </a-select-option>
                 </a-select>
               </p>
-              <p>
+              <!-- <p>
                 选择模型:
                 <a-select default-value="ch_ppocr_server_v2.0_xx" style="width: 220px" @change="handleOrcModelChange">
                  <a-select-option value="ch_ppocr_mobile_v2.0_xx">
@@ -103,6 +103,17 @@
                  </a-select-option>
                  <a-select-option value="chinese_cht_mobile_v2.0">
                    chinese_cht_mobile_v2.0
+                 </a-select-option>
+                </a-select>
+              </p> -->
+              <p>
+                选择检测语言:
+                <a-select default-value="en" style="width: 220px" @change="handleLanguageChange">
+                 <a-select-option value="en">
+                   英文
+                 </a-select-option>
+                 <a-select-option value="ch">
+                   中文
                  </a-select-option>
                 </a-select>
               </p>
@@ -222,6 +233,7 @@ export default {
       comporessSize: 1600,
       confidence: 0, // 置信度
       ocrModel: 'ch_ppocr_server_v2.0_xx',
+      language: 'en',
       hiddenCompressBox:false,
       labelExtract:false
     }
@@ -232,6 +244,9 @@ export default {
   methods: {
     handleOrcModelChange(value) {
       this.ocrModel = value
+    },
+    handleLanguageChange(value) {
+      this.language = value
     },
     changeCompressBtn(checked) {
 
@@ -308,6 +323,7 @@ export default {
       }
       formData.append('ocr_model',this.$data.ocrModel)
       formData.append('confidence',this.$data.confidence)
+      formData.append('language',this.$data.language)
       console.log(this.$data.ocrModel)
       this.isOCRing = true
       this.uploading = true
@@ -396,6 +412,7 @@ export default {
       formData.append('confidence',this.$data.confidence)
       formData.append('ocr_model',this.$data.ocrModel)
       formData.append('vin','5LMPJ8KA7RJ739205')
+      formData.append('language',this.$data.language)
 
       this.isOCRing = true
       this.uploading = true

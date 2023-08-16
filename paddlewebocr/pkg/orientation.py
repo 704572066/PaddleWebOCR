@@ -41,5 +41,5 @@ def orientation_detect(image):
     except:
         return None
 #
-# image = cv2.imread('../../images/ford/3.jpg')
+# image = cv2.imread('../../images/ford/1.jpg')
 # orientation_detect(image)

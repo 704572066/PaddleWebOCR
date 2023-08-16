@@ -2,6 +2,10 @@ paddlepaddle==2.4.0
 paddleocr==2.7
 opencv-python==4.5.5.64
 opencv-contrib-python==4.5.5.64
+pytesseract==0.3.10
+pydantic-settings==2.0.1
+urllib3==1.26.15
+mysqlclient==2.1.1
 fastapi
 python-multipart
 uvicorn

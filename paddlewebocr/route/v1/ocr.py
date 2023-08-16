@@ -31,7 +31,8 @@ async def ocr(img_upload: List[UploadFile] = File(None),
               img_b64: str = Form(None),
               compress_size: int = Form(None),
               confidence: float = Form(None),
-              ocr_model: str = Form(None)):
+              ocr_model: str = Form(None),
+              language: str = Form(None)):
     start_time = time.time()
     img_bytes = img_upload[0].file.read()
     if img_upload is not None:
@@ -46,7 +47,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     img = img.convert("RGB")
     img = compress_image(img, compress_size)
 
-    texts = text_ocr_v4(img)[0]
+    texts = text_ocr_v4(img, language)[0]
 
     # 去掉置信度小于0.9的文本
     print(texts)
@@ -98,7 +99,8 @@ async def save(img_upload: List[UploadFile] = File(None),
               img_b64: str = Form(None),
               compress_size: int = Form(None),
               confidence: float = Form(None),
-              ocr_model: str = Form(None)):
+              ocr_model: str = Form(None),
+              language: str = Form(None)):
     start_time = time.time()
     img_bytes = img_upload[0].file.read()
     if img_upload is not None:
@@ -116,7 +118,7 @@ async def save(img_upload: List[UploadFile] = File(None),
     img = get_receipt_contours(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
     img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
     # texts = text_ocr(img, ocr_model)
-    texts = text_ocr_v4(img)[0]
+    texts = text_ocr_v4(img, language)[0]
     # 去掉置信度小于0.9的文本
     i = 0
     while i < len(texts):
@@ -128,7 +130,7 @@ async def save(img_upload: List[UploadFile] = File(None),
     img_drawed = draw_box_on_image(img.copy(), texts)
     img_drawed_b64 = convert_image_to_b64(img_drawed)
 
-    save2db(vin,convert_image_to_b64(img),b64encode(img_upload[1].file.read()),'|'.join(list(map(lambda x: x[1][0], texts))))
+    save2db(vin,convert_image_to_b64(img),b64encode(img_upload[1].file.read()),'|'.join(list(map(lambda x: x[1][0], texts, language))))
     data = {'code': 0, 'msg': '成功',
             'data': {'img_detected': 'data:image/jpeg;base64,' + img_drawed_b64,
                      'raw_out': list(map(lambda x: [x[0], x[1][0], x[1][1]], texts)),
@@ -158,11 +160,12 @@ async def ocr(img_upload: List[UploadFile] = File(None),
 
     img = rotate_image(img)
     t = time.localtime()
-    img.save("images/ford/%s_%s_%s_%s.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S",t),id,compress_size,label_extract))
     img = img.convert("RGB")
+    img.save("images/ford/%s_%s_%s_%s.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S", t), id, compress_size, label_extract))
+
     # 压缩图片
     img = compress_image(img, compress_size)
-    texts_confidence = get_texts(id)
+    texts_confidence = get_texts(108)
 
     if label_extract:
         img = get_receipt_contours(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
@@ -178,7 +181,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
 
         img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
     # texts = text_ocr(img, ocr_model)
-    texts = text_ocr_v4(img)
+    texts = text_ocr_v4(img, texts_confidence[3])
     for idx in range(len(texts)):
         res = texts[idx]
         print(idx)

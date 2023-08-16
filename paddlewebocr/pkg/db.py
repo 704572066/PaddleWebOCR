@@ -4,7 +4,7 @@
 import MySQLdb
 import sys
 
-def save2db(vin, img1, img2, text):
+def save2db(vin, img1, img2, text, language):
     try:
         # 读取图片文件
         # fp = open("./test.jpg")
@@ -15,11 +15,11 @@ def save2db(vin, img1, img2, text):
         # 注意使用Binary()函数来指定存储的是二进制
         # cursor.execute("INSERT INTO ford values(%s,%s,%s,%s)" % (vin,img1,img2,text))
 
-        sql = "insert into ford(vin,img1,img2,text) values(%s,%s,%s,%s)"
+        sql = "insert into ford(vin,img1,img2,text,lang) values(%s,%s,%s,%s,%s)"
 
         # cursor.execute(sql)
 
-        cursor.execute(sql, (vin, img1, img2, text))
+        cursor.execute(sql, (vin, img1, img2, text, language))
         # 如果数据库没有设置自动提交，这里要提交一下
         conn.commit()
         cursor.close()
@@ -69,7 +69,7 @@ def get_texts(id):
         # 注意使用Binary()函数来指定存储的是二进制
         # cursor.execute("INSERT INTO ford values(%s,%s,%s,%s)" % (vin,img1,img2,text))
 
-        sql = "select text,confidence,direction from ford where id = %s"
+        sql = "select text,confidence,direction,lang from ford where id = %s"
 
         # cursor.execute(sql)
         # value = (id,id)
