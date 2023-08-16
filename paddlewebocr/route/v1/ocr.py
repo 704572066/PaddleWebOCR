@@ -9,7 +9,7 @@ from typing import Any
 from fastapi import APIRouter, File, UploadFile, Form, status
 from fastapi.responses import ORJSONResponse, JSONResponse
 from paddlewebocr.pkg.util import *
-from paddlewebocr.pkg.ocr import text_ocr
+from paddlewebocr.pkg.ocr import text_ocr, text_ocr_v4
 from paddlewebocr.pkg.db import save2db, get_imgs, get_texts
 from paddlewebocr.pkg.edge import get_receipt_contours
 from paddlewebocr.pkg.orientation import orientation_detect
@@ -46,8 +46,10 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     img = img.convert("RGB")
     img = compress_image(img, compress_size)
 
-    texts = text_ocr(img, ocr_model)
+    texts = text_ocr_v4(img)[0]
+
     # 去掉置信度小于0.9的文本
+    print(texts)
     i = 0
     while i < len(texts):
         if texts[i][1][1] < confidence:
@@ -113,7 +115,8 @@ async def save(img_upload: List[UploadFile] = File(None),
     # img = item_extract(np.array(img))
     img = get_receipt_contours(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
     img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
-    texts = text_ocr(img, ocr_model)
+    # texts = text_ocr(img, ocr_model)
+    texts = text_ocr_v4(img)[0]
     # 去掉置信度小于0.9的文本
     i = 0
     while i < len(texts):
@@ -139,7 +142,9 @@ async def ocr(img_upload: List[UploadFile] = File(None),
               compress_size: int = Form(None),
               id: int = Form(None),
               confidence: float = Form(None),
-              ocr_model: str = Form(None)):
+              ocr_model: str = Form(None),
+              label_extract: bool = Form(None)):
+
     start_time = time.time()
     img_bytes = img_upload[0].file.read()
     print(len(img_bytes))
@@ -152,37 +157,51 @@ async def ocr(img_upload: List[UploadFile] = File(None),
                             content={'code': 4001, 'msg': '没有传入参数'})
 
     img = rotate_image(img)
+    t = time.localtime()
+    img.save("images/ford/%s_%s_%s_%s.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S",t),id,compress_size,label_extract))
     img = img.convert("RGB")
-    # 不压缩图片
+    # 压缩图片
     img = compress_image(img, compress_size)
-    # img = item_extract(np.array(img))
-    img = get_receipt_contours(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
-    if img is None:
-        data = {'code': 2, 'msg': '图片不合规,提取不到标签,请重新拍摄'}
-        return MyORJSONResponse(content=data)
+    texts_confidence = get_texts(id)
 
-    # img = orientation_detect(img)
-    img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
-    texts = text_ocr(img, ocr_model)
+    if label_extract:
+        img = get_receipt_contours(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
+        if img is None:
+            data = {'code': 2, 'msg': '图片不合规,提取不到标签,请重新拍摄'}
+            return MyORJSONResponse(content=data)
+        # 文字方向检测
+        if texts_confidence[2]:
+            img = orientation_detect(img)
+            if img is None:
+                data = {'code': 2, 'msg': '图片不合规,文字方向检测错误,请重新拍摄'}
+                return MyORJSONResponse(content=data)
 
-    if len(texts) == 0:
+        img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
+    # texts = text_ocr(img, ocr_model)
+    texts = text_ocr_v4(img)
+    for idx in range(len(texts)):
+        res = texts[idx]
+        print(idx)
+        for line in res:
+            print(line[1][1])
+    if len(texts[0]) == 0:
         data = {'code': 2, 'msg': '图片不合规,提取不到文字,请重新拍摄'}
         return MyORJSONResponse(content=data)
 
-    texts_confidence = get_texts(id)
-    print('|'.join(list(map(lambda x: x[1][0], texts))))
+
+    print('|'.join(list(map(lambda x: x[1][0], texts[0]))))
     # 去掉置信度小于0.8的文本
     i = 0
-    while i < len(texts):
-        if texts[i][1][1] < texts_confidence[1]:
-            texts.pop(i)
+    while i < len(texts[0]):
+        if texts[0][i][1][1] < texts_confidence[1]:
+            texts[0].pop(i)
             i -= 1
         else:
             i += 1
-    print('|'.join(list(map(lambda x: x[1][0], texts))))
+    print('|'.join(list(map(lambda x: x[1][0], texts[0]))))
     # img_drawed = draw_box_on_image(img.copy(), texts)
     # img_drawed_b64 = convert_image_to_b64(img_drawed)
-    result1 = re.sub(r'[\s,]*', '', '|'.join(list(map(lambda x: x[1][0], texts))))
+    result1 = re.sub(r'[\s,]*', '', '|'.join(list(map(lambda x: x[1][0], texts[0]))))
 
     result2 = re.sub(r'[\s,]*', '', texts_confidence[0])
     print(result1+"\n"+result2)
@@ -193,8 +212,8 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         # list1 = list(map(str, result1.split('|')))
         # length2 = len(list2)
         # length1 = len(list1)
-        percentage_a, filter_texts_a = texts_pair_algorithm_a(texts, texts_confidence[0])
-        percentage_b, filter_texts_b = texts_pair_algorithm_b(texts, texts_confidence[0])
+        percentage_a, filter_texts_a = texts_pair_algorithm_a(texts[0], texts_confidence[0])
+        percentage_b, filter_texts_b = texts_pair_algorithm_b(texts[0], texts_confidence[0])
         if percentage_a < percentage_b:
             percentage = percentage_a
             filter_texts = filter_texts_a

@@ -31,3 +31,9 @@ OCR = {
 def text_ocr(img: Image, ocr_model: str) -> list:
     ocr = OCR.get(ocr_model, OCR["ch_ppocr_mobile_v2.0_xx"])
     return ocr.ocr(np.array(img), cls=False)
+
+
+def text_ocr_v4(img: Image) -> list:
+    # ocr = OCR.get(ocr_model, OCR["ch_ppocr_mobile_v2.0_xx"])
+    ocr = PaddleOCR(use_angle_cls=True, lang="en")  # need to run only once to download and load model into memory
+    return ocr.ocr(np.array(img), cls=True)

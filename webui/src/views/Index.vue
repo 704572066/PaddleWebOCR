@@ -53,7 +53,7 @@
           <div class="btn-group">
             <a-button @click="handleUpload" :loading="isOCRing">识别</a-button>
             <a-button @click="handleUploadSave" :loading="isOCRing">识别并存储</a-button>
-            <a-button @click="handleUploadDiff" :loading="isOCRing">识别并比较</a-button>
+            <a-button @click="handleUploadDiff" :loading="isOCRDiffing">识别并比较</a-button>
             <a-button @click="getImgList" :loading="isOCRing">获取图片列表</a-button>
             <!-- 压缩图片、显示检测后的图片、显示原始值、显示纯文字 -->
             <div style="margin-top:1rem;">
@@ -138,6 +138,16 @@
                 />
                 <!-- @change="onChange" -->
               </p>
+              <p>
+                标签提取模式:
+                <a-switch
+                  style="width:auto;min-width:45%;"
+                  checked-children="开"
+                  un-checked-children="关"
+                  default-un-checked
+                  @change="changeLabelExtractBtn"
+                />
+              </p>
             </div>
           </div>
 
@@ -205,13 +215,15 @@ export default {
       previewImgHidden: true, // 状态 预览图片是否隐藏
       previewLocationImgHidden: true, // 状态 标签位置预览图片是否隐藏
       isOCRing: false, // 状态 是否在识别中
+      isOCRDiffing: false,
       hiddenDetectedImg: true, //状态  是否显示检测后的图片
       hiddenOcrRaw: true, // 状态  是否显示返回的原始结果
       hiddenOcrText: true, // 状态 是否显示经过提取后的文字结果
       comporessSize: 1600,
       confidence: 0, // 置信度
       ocrModel: 'ch_ppocr_server_v2.0_xx',
-      hiddenCompressBox:false
+      hiddenCompressBox:false,
+      labelExtract:false
     }
   },
   components: {
@@ -228,6 +240,15 @@ export default {
       }
       else{
         this.$data.hiddenCompressBox = true
+      }
+    },
+    changeLabelExtractBtn(checked) {
+
+      if(checked === false){
+        this.$data.labelExtract = false
+      }
+      else{
+        this.$data.labelExtract = true
       }
     },
     handleChange(info) {
@@ -463,8 +484,9 @@ export default {
       formData.append('confidence',this.$data.confidence)
       formData.append('ocr_model',this.$data.ocrModel)
       formData.append('id',5)
+      formData.append('label_extract',this.$data.labelExtract)
 
-      this.isOCRing = true
+      this.isOCRDiffing = true
       this.uploading = true
 
       const _this = this
@@ -513,7 +535,7 @@ export default {
           // }
 
           _this.$data.uploading = false
-          _this.$data.isOCRing = false
+          _this.$data.isOCRDiffing = false
           _this.$data.hiddenDetectedImg = false
           _this.$data.hiddenOcrRaw = false
           _this.$data.hiddenOcrText = false
@@ -525,7 +547,7 @@ export default {
         .catch(function(error) {
           // console.log(error)
           _this.$data.isOCRing = false
-
+          _this.$data.isOCRDiffing = false
           const errorInfo = error.response['msg'] || error.message
           _this.$message.error('错误：' + errorInfo)
 

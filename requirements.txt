@@ -1,5 +1,7 @@
-paddlepaddle==2.2.0
-paddleocr==2.3.0.2
+paddlepaddle==2.4.0
+paddleocr==2.7
+opencv-python==4.5.5.64
+opencv-contrib-python==4.5.5.64
 fastapi
 python-multipart
 uvicorn

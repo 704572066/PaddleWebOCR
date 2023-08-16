@@ -15,7 +15,7 @@ def compress_image(img: Image, compress_size: int) -> Image:
 
         new_width = int(img.width / scale + 0.5)
         new_height = int(img.height / scale + 0.5)
-        img = img.resize((new_width, new_height), Image.ANTIALIAS)
+        img = img.resize((new_width, new_height), Image.LANCZOS)
     return img
 
 

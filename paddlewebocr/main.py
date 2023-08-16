@@ -56,9 +56,10 @@ app.mount("/", StaticFiles(directory=os.path.join(".", "webui", "dist"), html=Tr
 @click.command()
 @click.option("--bind", default='0.0.0.0', help="service bind address")
 @click.option("--port", default=8080, help="service port")
+# @click.option("--debug", default=True, help="debug mode")
 def main(bind, port):
     import uvicorn
-    uvicorn.run(app, host=bind, port=port)
+    uvicorn.run(app, host=bind, port=port, debug=True)
 
 
 if __name__ == "__main__":

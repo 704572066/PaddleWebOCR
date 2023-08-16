@@ -53,7 +53,14 @@ def texts_pair_algorithm_a(a, b):
     print(remove_a)
     remove_b = set_b - set_a
     print(remove_b)
+    vin1 = re.compile(".*5LMP.*")
+    vin2 = re.compile(".*LVSP.*")
+    list1 = list(filter(vin1.match, list(remove_b)))  # Read Note below
+    list2 = list(filter(vin2.match, list(remove_b)))  # Read Note below
     percentage = len(remove_b) / len(set_b)
+    if len(list1) > 0 or len(list2) > 0:
+        percentage = 1
+    # percentage = len(remove_b) / len(set_b)
     filter_texts = list(filter(lambda x: not set(re.sub(r'\s+', '|', re.sub(r',+', '', x[1][0])).split('|')).isdisjoint(remove_a), a))
     print(filter_texts)
     return percentage, filter_texts
@@ -71,7 +78,13 @@ def texts_pair_algorithm_b(a, b):
     print(remove_a)
     remove_b = set_b - set_a
     print(remove_b)
+    vin1 = re.compile(".*5LMP.*")
+    vin2 = re.compile(".*LVSP.*")
+    list1 = list(filter(vin1.match, list(remove_b)))  # Read Note below
+    list2 = list(filter(vin2.match, list(remove_b)))  # Read Note below
     percentage = len(remove_b) / len(set_b)
+    if len(list1) > 0 or len(list2) > 0:
+        percentage = 1
     filter_texts = list(filter(lambda x: re.sub(r'[\s,()（）\']*', '', x[1][0]) in remove_a, a))
     print(filter_texts)
     return percentage, filter_texts
@@ -96,3 +109,10 @@ def texts_pair_algorithm_b(a, b):
 #
 # result1 = re.sub(r'[\s,()（）\']*', '', "LES OBJETS DANS LE RETROVISEUR|SONTPLUS PRESQU'ILS|NE LE SEMBLENT|YHU5A-214A96-AA")
 # print(result1)
+
+mylist = ["dog", "rcat", "wildcatr", "thundercat", "cow", "hooo"]
+vin1 = re.compile(".*5LMP.*")
+vin2 = re.compile(".*LVSP.*")
+newlist = list(filter(vin1.match, mylist)) # Read Note below
+newlist = list(filter(vin2.match, mylist)) # Read Note below
+print(newlist)

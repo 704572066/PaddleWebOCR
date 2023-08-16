@@ -19,24 +19,27 @@ def rotate_bound(image, angle):
 # image = cv2.imread('../../images/y.png')
 
 def orientation_detect(image):
-    rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    results = pytesseract.image_to_osd(rgb, output_type=Output.DICT)
-    print("[INFO] detected orientation: {}".format(
-        results["orientation"]))
-    print("[INFO] rotate by {} degrees to correct".format(
-        results["rotate"]))
-    print("[INFO] detected script: {}".format(results["script"]))
-    rotated = rotate_bound(image, angle=results["rotate"])
-    cv2.namedWindow("Original", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("Original", 600, 800)
-    cv2.namedWindow('Original', 0)
-    cv2.imshow("Original", image)
-    cv2.namedWindow("Output", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("Output", 600, 800)
-    cv2.namedWindow('Output', 0)
-    cv2.imshow("Output", rotated)
-    cv2.waitKey(0)
-    return rotated
-
-# image = cv2.imread('../../images/p.jpg')
+    try:
+        rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        results = pytesseract.image_to_osd(rgb, output_type=Output.DICT)
+        print("[INFO] detected orientation: {}".format(
+            results["orientation"]))
+        print("[INFO] rotate by {} degrees to correct".format(
+            results["rotate"]))
+        print("[INFO] detected script: {}".format(results["script"]))
+        rotated = rotate_bound(image, angle=results["rotate"])
+        cv2.namedWindow("Original", cv2.WINDOW_NORMAL)
+        cv2.resizeWindow("Original", 600, 800)
+        cv2.namedWindow('Original', 0)
+        cv2.imshow("Original", image)
+        cv2.namedWindow("Output", cv2.WINDOW_NORMAL)
+        cv2.resizeWindow("Output", 600, 800)
+        cv2.namedWindow('Output', 0)
+        cv2.imshow("Output", rotated)
+        cv2.waitKey(0)
+        return rotated
+    except:
+        return None
+#
+# image = cv2.imread('../../images/ford/3.jpg')
 # orientation_detect(image)
