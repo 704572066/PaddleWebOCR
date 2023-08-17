@@ -20,7 +20,7 @@ def binarize(img):
     """画像を2値化する
     """
     gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    binary_img = cv2.adaptiveThreshold(gray_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 191, 2)
+    binary_img = cv2.adaptiveThreshold(gray_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 255, 2)
     plot_img(binary_img, 'binary_img')
     return binary_img
 

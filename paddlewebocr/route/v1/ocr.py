@@ -130,7 +130,7 @@ async def save(img_upload: List[UploadFile] = File(None),
     img_drawed = draw_box_on_image(img.copy(), texts)
     img_drawed_b64 = convert_image_to_b64(img_drawed)
 
-    save2db(vin,convert_image_to_b64(img),b64encode(img_upload[1].file.read()),'|'.join(list(map(lambda x: x[1][0], texts, language))))
+    save2db(vin,convert_image_to_b64(img),b64encode(img_upload[1].file.read()),'|'.join(list(map(lambda x: x[1][0], texts))),language)
     data = {'code': 0, 'msg': '成功',
             'data': {'img_detected': 'data:image/jpeg;base64,' + img_drawed_b64,
                      'raw_out': list(map(lambda x: [x[0], x[1][0], x[1][1]], texts)),
@@ -165,7 +165,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
 
     # 压缩图片
     img = compress_image(img, compress_size)
-    texts_confidence = get_texts(108)
+    texts_confidence = get_texts(id)
 
     if label_extract:
         img = get_receipt_contours(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
