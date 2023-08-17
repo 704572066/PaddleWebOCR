@@ -204,47 +204,47 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     print('|'.join(list(map(lambda x: x[1][0], texts[0]))))
     # img_drawed = draw_box_on_image(img.copy(), texts)
     # img_drawed_b64 = convert_image_to_b64(img_drawed)
-    result1 = re.sub(r'[\s,]*', '', '|'.join(list(map(lambda x: x[1][0], texts[0]))))
-
-    result2 = re.sub(r'[\s,]*', '', texts_confidence[0])
-    print(result1+"\n"+result2)
-    if result1 == result2:
-        data = {'code': 0, 'msg': '成功', 'data': {'speed_time': round(time.time() - start_time, 2)}}
-    else:
+    # result1 = re.sub(r'[\s,]*', '', '|'.join(list(map(lambda x: x[1][0], texts[0]))))
+    #
+    # result2 = re.sub(r'[\s,]*', '', texts_confidence[0])
+    # print(result1+"\n"+result2)
+    # if result1 == result2:
+    #     data = {'code': 0, 'msg': '成功', 'data': {'speed_time': round(time.time() - start_time, 2)}}
+    # else:
         # list2 = list(map(str, result2.split('|')))
         # list1 = list(map(str, result1.split('|')))
         # length2 = len(list2)
         # length1 = len(list1)
-        percentage_a, filter_texts_a = texts_pair_algorithm_a(texts[0], texts_confidence[0])
-        percentage_b, filter_texts_b = texts_pair_algorithm_b(texts[0], texts_confidence[0])
-        if percentage_a < percentage_b:
-            percentage = percentage_a
-            filter_texts = filter_texts_a
-        else:
-            percentage = percentage_b
-            filter_texts = filter_texts_b
+    percentage_a, filter_texts_a = texts_pair_algorithm_a(texts[0], texts_confidence[0])
+    percentage_b, filter_texts_b = texts_pair_algorithm_b(texts[0], texts_confidence[0])
+    if percentage_a < percentage_b:
+        percentage = percentage_a
+        filter_texts = filter_texts_a
+    else:
+        percentage = percentage_b
+        filter_texts = filter_texts_b
 
-        if percentage > 0.3:
-            img_drawed = draw_box_on_image(img, filter_texts)
-            img_drawed_b64 = convert_image_to_b64(img_drawed)
-            data = {'code': 1, 'msg': '失败', 'data': {'img_detected': 'data:image/jpeg;base64,' + img_drawed_b64,
-                                                       'speed_time': round(time.time() - start_time, 2)}}
-            # list(map(lambda x: x, texts))
-        else:
-            data = {'code': 0, 'msg': '成功', 'data': {'percentage': percentage,'speed_time': round(time.time() - start_time, 2)}}
-        # if length1 <= length2:
-        #     for i, text in enumerate(list1):
-        #         if text != list2[i]:
-        #             print(text)
-        #             print(list2[i])
-        #             img_drawed = draw_one_box_on_image(img, texts[i][0])
-        #             break
-        # else:
-        #     for i, text in enumerate(list1):
-        #         if i<length2 and text != list2[i]:
-        #             img_drawed = draw_one_box_on_image(img, texts[i][0])
-        #             break
-        # img_drawed = draw_box_on_image(img.copy(), texts)
+    if percentage > 0.3:
+        img_drawed = draw_box_on_image(img, filter_texts)
+        img_drawed_b64 = convert_image_to_b64(img_drawed)
+        data = {'code': 1, 'msg': '失败', 'data': {'img_detected': 'data:image/jpeg;base64,' + img_drawed_b64,
+                                                   'speed_time': round(time.time() - start_time, 2)}}
+        # list(map(lambda x: x, texts))
+    else:
+        data = {'code': 0, 'msg': '成功', 'data': {'percentage': percentage,'speed_time': round(time.time() - start_time, 2)}}
+    # if length1 <= length2:
+    #     for i, text in enumerate(list1):
+    #         if text != list2[i]:
+    #             print(text)
+    #             print(list2[i])
+    #             img_drawed = draw_one_box_on_image(img, texts[i][0])
+    #             break
+    # else:
+    #     for i, text in enumerate(list1):
+    #         if i<length2 and text != list2[i]:
+    #             img_drawed = draw_one_box_on_image(img, texts[i][0])
+    #             break
+    # img_drawed = draw_box_on_image(img.copy(), texts)
 
 
     return MyORJSONResponse(content=data)

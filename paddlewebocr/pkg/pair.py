@@ -36,10 +36,10 @@ b = [
  'it'
 ]
 def texts_pair_algorithm_a(a, b):
-    result1 = re.sub(r',+', '', '|'.join(list(map(lambda x: x[1][0], a))))
+    result1 = re.sub(r'[,()（）:.\']*', '', '|'.join(list(map(lambda x: x[1][0], a))))
     result1 = re.sub(r'\s+', '|', result1)
 
-    result2 = re.sub(r',+', '', b)
+    result2 = re.sub(r'[,()（）:.\']*', '', b)
     result2 = re.sub(r'\s+', '|', result2)
     list2 = list(map(str, result2.split('|')))
     list1 = list(map(str, result1.split('|')))
@@ -61,7 +61,7 @@ def texts_pair_algorithm_a(a, b):
     if len(list1) > 0 or len(list2) > 0:
         percentage = 1
     # percentage = len(remove_b) / len(set_b)
-    filter_texts = list(filter(lambda x: not set(re.sub(r'\s+', '|', re.sub(r',+', '', x[1][0])).split('|')).isdisjoint(remove_a), a))
+    filter_texts = list(filter(lambda x: not set(re.sub(r'\s+', '|', re.sub(r'[,()（）:.\']*', '', x[1][0])).split('|')).isdisjoint(remove_a), a))
     print(filter_texts)
     return percentage, filter_texts
 
@@ -98,8 +98,8 @@ def texts_pair_algorithm_b(a, b):
 # b = "aa    bb  cc d,:d   77"
 # a =  re.sub(r'\s+', '|', b)
 # a =  re.sub(r',', '', a)
-# t = re.sub(r',+', '', "99 ii    p,,,ppp")
-# print(t)
+t = re.sub(r',:+', '', "99 ii    p,,,p:pp")
+print(t)
 # m = re.sub(r'\s+', '|', t)
 # print(m)
 # c = re.sub(r'\s+', '|', re.sub(r',+', '', "99 ii    p,,,ppp")).split('|')
