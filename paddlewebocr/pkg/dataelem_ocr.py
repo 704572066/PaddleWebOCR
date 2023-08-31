@@ -21,7 +21,7 @@ def api_call(b64, scene):
     res = requests.post(url, json=data).json()
     # json_str = '{"id": "0f1a5a5e-904d-45ed-8f8f-c278310a4e65","status": "success","message": null,"data": {"json": {"general_ocr_res": {"bboxes": [[[320,396],[667,395],[668,433],[321,435]],[[320,396],[667,395],[668,433],[321,435]]],"texts": ["北京市出租汽车专用发票","tee"]},"table_result": null},"resultFile": null,"resultImg": "/9j/4AAQSkZJ……"}}'
     # data = json.loads(json_str)
-    # print(res)
+    print(res)
     bboxes = res['data']['json']['general_ocr_res']['bboxes']
     texts = res['data']['json']['general_ocr_res']['texts']
     i = 0

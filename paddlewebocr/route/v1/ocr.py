@@ -15,7 +15,7 @@ from paddlewebocr.pkg.ocr import text_ocr, text_ocr_v4
 from paddlewebocr.pkg.db import save2db, get_imgs, get_texts
 from paddlewebocr.pkg.edge import get_receipt_contours
 from paddlewebocr.pkg.orientation import orientation_detect
-from paddlewebocr.pkg.pair import texts_pair_algorithm_a, texts_pair_algorithm_b
+from paddlewebocr.pkg.pair import texts_pair_algorithm_aa, texts_pair_algorithm_bb
 from typing import List
 
 mysql_res = None
@@ -127,22 +127,22 @@ async def save(img_upload: List[UploadFile] = File(None),
     img = img.convert("RGB")
     img = compress_image(img, compress_size)
     # img = item_extract(np.array(img))
-    img = get_receipt_contours(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
-    img = orientation_detect(img)
-    img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
+    # img = get_receipt_contours(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
+    # img = orientation_detect(img)
+    # img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
     # texts = text_ocr(img, ocr_model)
     # texts = text_ocr_v4(img, language)[0]
     b64 = convert_image_to_b64(img)
 
-    texts = api_call(b64, 'chinese_print')
+    texts = api_call(b64, language)
     # 去掉置信度小于0.9的文本
-    i = 0
-    while i < len(texts):
-        if texts[i][1][1] < confidence:
-            texts.pop(i)
-            i -= 1
-        else:
-            i += 1
+    # i = 0
+    # while i < len(texts):
+    #     if texts[i][1][1] < confidence:
+    #         texts.pop(i)
+    #         i -= 1
+    #     else:
+    #         i += 1
     img_drawed = draw_box_on_image(img.copy(), texts)
     img_drawed_b64 = convert_image_to_b64(img_drawed)
 
@@ -245,8 +245,8 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         # list1 = list(map(str, result1.split('|')))
         # length2 = len(list2)
         # length1 = len(list1)
-    percentage_a, filter_texts_a = texts_pair_algorithm_a(texts, texts_confidence[0])
-    percentage_b, filter_texts_b = texts_pair_algorithm_b(texts, texts_confidence[0])
+    percentage_a, filter_texts_a = texts_pair_algorithm_aa(texts, texts_confidence[0])
+    percentage_b, filter_texts_b = texts_pair_algorithm_bb(texts, texts_confidence[0])
     if percentage_a < percentage_b:
         percentage = percentage_a
         filter_texts = filter_texts_a

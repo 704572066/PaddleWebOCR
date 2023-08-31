@@ -1,3 +1,4 @@
+import collections
 import re
 
 a = [
@@ -65,17 +66,22 @@ def texts_pair_algorithm_a(a, b):
     # print(filter_texts)
     return percentage, filter_texts
 
-def texts_pair_algorithm_b(a, b):
-    result1 = re.sub(r'[\s,()（）:.\']*', '', '|'.join(list(map(lambda x: x[1][0], a))))
+def texts_pair_algorithm_aa(a, b):
+    result1 = re.sub(r'[,()（）:.\']*', '', '|'.join(list(map(lambda x: x[1][0], a))))
+    result1 = re.sub(r'\s+', '|', result1)
 
-    result2 = re.sub(r'[\s,()（）:.\']*', '', b)
+    result2 = re.sub(r'[,()（）:.\']*', '', b)
+    result2 = re.sub(r'\s+', '|', result2)
     list2 = list(map(str, result2.split('|')))
     list1 = list(map(str, result1.split('|')))
 
-    set_a = set(list1)
-    # print("set_a: %s" % set_a)
-    set_b = set(list2)
-    # print("set_b: %s" % set_b)
+    set_a = collections.Counter(list1)
+    set_b = collections.Counter(list2)
+
+
+    # print(set_b)
+    # print('-----------\n')
+    # print(set_a)
     remove_a = set_a - set_b
     # print(remove_a)
     remove_b = set_b - set_a
@@ -84,7 +90,61 @@ def texts_pair_algorithm_b(a, b):
     vin2 = re.compile(".*LVSP.*")
     list1 = list(filter(vin1.match, list(remove_b)))  # Read Note below
     list2 = list(filter(vin2.match, list(remove_b)))  # Read Note below
+    percentage = sum(remove_b.values()) / sum(set_b.values())
+    if len(list1) > 0 or len(list2) > 0:
+        percentage = 1
+    # percentage = len(remove_b) / len(set_b)
+    filter_texts = list(filter(lambda x: not set(re.sub(r'\s+', '|', re.sub(r'[,()（）:.\']*', '', x[1][0])).split('|')).isdisjoint(remove_a), a))
+    # print(filter_texts)
+    return percentage, filter_texts
+
+def texts_pair_algorithm_b(a, b):
+    result1 = re.sub(r'[\s,()（）:.\']*', '', '|'.join(list(map(lambda x: x[1][0], a))))
+
+    result2 = re.sub(r'[\s,()（）:.\']*', '', b)
+    list2 = list(map(str, result2.split('|')))
+    list1 = list(map(str, result1.split('|')))
+
+    set_a = set(list1)
+    print("set_a: %s" % set_a)
+    set_b = set(list2)
+    print("set_b: %s" % set_b)
+    remove_a = set_a - set_b
+    print(remove_a)
+    remove_b = set_b - set_a
+    print(remove_b)
+    vin1 = re.compile(".*5LMP.*")
+    vin2 = re.compile(".*LVSP.*")
+    list1 = list(filter(vin1.match, list(remove_b)))  # Read Note below
+    list2 = list(filter(vin2.match, list(remove_b)))  # Read Note below
     percentage = len(remove_b) / len(set_b)
+    if len(list1) > 0 or len(list2) > 0:
+        percentage = 1
+    filter_texts = list(filter(lambda x: re.sub(r'[\s,()（）:.\']*', '', x[1][0]) in remove_a, a))
+    # print(filter_texts)
+    return percentage, filter_texts
+
+
+def texts_pair_algorithm_bb(a, b):
+    result1 = re.sub(r'[\s,()（）:.\']*', '', '|'.join(list(map(lambda x: x[1][0], a))))
+
+    result2 = re.sub(r'[\s,()（）:.\']*', '', b)
+    list2 = list(map(str, result2.split('|')))
+    list1 = list(map(str, result1.split('|')))
+
+    set_a = collections.Counter(list1)
+    print("set_a: %s" % set_a)
+    set_b = collections.Counter(list2)
+    print("set_b: %s" % set_b)
+    remove_a = set_a - set_b
+    print(remove_a)
+    remove_b = set_b - set_a
+    print(remove_b)
+    vin1 = re.compile(".*5LMP.*")
+    vin2 = re.compile(".*LVSP.*")
+    list1 = list(filter(vin1.match, list(remove_b)))  # Read Note below
+    list2 = list(filter(vin2.match, list(remove_b)))  # Read Note below
+    percentage = sum(remove_b.values()) / sum(set_b.values())
     if len(list1) > 0 or len(list2) > 0:
         percentage = 1
     filter_texts = list(filter(lambda x: re.sub(r'[\s,()（）:.\']*', '', x[1][0]) in remove_a, a))
