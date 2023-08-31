@@ -46,13 +46,13 @@ def texts_pair_algorithm_a(a, b):
 
     set_a = set(list1)
     set_b = set(list2)
-    print(set_b)
-    print('-----------\n')
-    print(set_a)
+    # print(set_b)
+    # print('-----------\n')
+    # print(set_a)
     remove_a = set_a - set_b
-    print(remove_a)
+    # print(remove_a)
     remove_b = set_b - set_a
-    print(remove_b)
+    # print(remove_b)
     vin1 = re.compile(".*5LMP.*")
     vin2 = re.compile(".*LVSP.*")
     list1 = list(filter(vin1.match, list(remove_b)))  # Read Note below
@@ -62,7 +62,7 @@ def texts_pair_algorithm_a(a, b):
         percentage = 1
     # percentage = len(remove_b) / len(set_b)
     filter_texts = list(filter(lambda x: not set(re.sub(r'\s+', '|', re.sub(r'[,()（）:.\']*', '', x[1][0])).split('|')).isdisjoint(remove_a), a))
-    print(filter_texts)
+    # print(filter_texts)
     return percentage, filter_texts
 
 def texts_pair_algorithm_b(a, b):
@@ -73,13 +73,13 @@ def texts_pair_algorithm_b(a, b):
     list1 = list(map(str, result1.split('|')))
 
     set_a = set(list1)
-    print("set_a: %s" % set_a)
+    # print("set_a: %s" % set_a)
     set_b = set(list2)
-    print("set_b: %s" % set_b)
+    # print("set_b: %s" % set_b)
     remove_a = set_a - set_b
-    print(remove_a)
+    # print(remove_a)
     remove_b = set_b - set_a
-    print(remove_b)
+    # print(remove_b)
     vin1 = re.compile(".*5LMP.*")
     vin2 = re.compile(".*LVSP.*")
     list1 = list(filter(vin1.match, list(remove_b)))  # Read Note below
@@ -88,7 +88,7 @@ def texts_pair_algorithm_b(a, b):
     if len(list1) > 0 or len(list2) > 0:
         percentage = 1
     filter_texts = list(filter(lambda x: re.sub(r'[\s,()（）:.\']*', '', x[1][0]) in remove_a, a))
-    print(filter_texts)
+    # print(filter_texts)
     return percentage, filter_texts
 # for item in remove_b:
 #     b.remove(item)
@@ -98,8 +98,8 @@ def texts_pair_algorithm_b(a, b):
 # b = "aa    bb  cc d,:d   77"
 # a =  re.sub(r'\s+', '|', b)
 # a =  re.sub(r',', '', a)
-t = re.sub(r',:+', '', "99 ii    p,,,p:pp")
-print(t)
+# t = re.sub(r',:+', '', "99 ii    p,,,p:pp")
+# print(t)
 # m = re.sub(r'\s+', '|', t)
 # print(m)
 # c = re.sub(r'\s+', '|', re.sub(r',+', '', "99 ii    p,,,ppp")).split('|')

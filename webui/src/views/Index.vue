@@ -108,11 +108,11 @@
               </p> -->
               <p>
                 选择检测语言:
-                <a-select default-value="en" style="width: 220px" @change="handleLanguageChange">
-                 <a-select-option value="en">
+                <a-select default-value="english_print" style="width: 220px" @change="handleLanguageChange">
+                 <a-select-option value="english_print">
                    英文
                  </a-select-option>
-                 <a-select-option value="ch">
+                 <a-select-option value="chinese_print">
                    中文
                  </a-select-option>
                 </a-select>
@@ -233,7 +233,7 @@ export default {
       comporessSize: 1600,
       confidence: 0, // 置信度
       ocrModel: 'ch_ppocr_server_v2.0_xx',
-      language: 'en',
+      language: 'english_print',
       hiddenCompressBox:false,
       labelExtract:false
     }

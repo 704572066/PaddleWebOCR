@@ -3,7 +3,7 @@ import base64
 from io import BytesIO
 from PIL import Image, ImageDraw
 
-MAX_COMPRESS_SIZE = 1600
+MAX_COMPRESS_SIZE = 1400
 
 
 def compress_image(img: Image, compress_size: int) -> Image:

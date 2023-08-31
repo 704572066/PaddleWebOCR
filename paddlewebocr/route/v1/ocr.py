@@ -8,6 +8,8 @@ import logging
 from typing import Any
 from fastapi import APIRouter, File, UploadFile, Form, status
 from fastapi.responses import ORJSONResponse, JSONResponse
+
+from paddlewebocr.pkg.dataelem_ocr import api_call
 from paddlewebocr.pkg.util import *
 from paddlewebocr.pkg.ocr import text_ocr, text_ocr_v4
 from paddlewebocr.pkg.db import save2db, get_imgs, get_texts
@@ -16,6 +18,7 @@ from paddlewebocr.pkg.orientation import orientation_detect
 from paddlewebocr.pkg.pair import texts_pair_algorithm_a, texts_pair_algorithm_b
 from typing import List
 
+mysql_res = None
 class MyORJSONResponse(ORJSONResponse):
     media_type = "application/json"
 
@@ -47,7 +50,12 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     img = img.convert("RGB")
     img = compress_image(img, compress_size)
 
-    texts = text_ocr_v4(img, language)[0]
+    b64 = convert_image_to_b64(img)
+
+    texts = api_call(b64, language)
+
+
+    # texts = text_ocr_v4(img, language)[0]
 
     # 去掉置信度小于0.9的文本
     print(texts)
@@ -79,6 +87,9 @@ async def images(vin: str = Form(None)):
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST,
                             content={'code': 4001, 'msg': '没有传入参数'})
     results = get_imgs(vin)
+    global mysql_res
+    mysql_res = []
+    # print(mysql_res)
     list = []
     # pair  = []
     for row in results:
@@ -87,6 +98,7 @@ async def images(vin: str = Form(None)):
         # pair.append('data:image/jpeg;base64,'+row[1])
         # pair.append('data:image/jpeg;base64,'+row[2])
         list.append(pair)
+        mysql_res.append([row[0], row[3], row[4], row[5], row[6]])
 
     data = {'code': 0, 'msg': '成功',
             'data': {'images': list}}
@@ -116,9 +128,13 @@ async def save(img_upload: List[UploadFile] = File(None),
     img = compress_image(img, compress_size)
     # img = item_extract(np.array(img))
     img = get_receipt_contours(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
+    img = orientation_detect(img)
     img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
     # texts = text_ocr(img, ocr_model)
-    texts = text_ocr_v4(img, language)[0]
+    # texts = text_ocr_v4(img, language)[0]
+    b64 = convert_image_to_b64(img)
+
+    texts = api_call(b64, 'chinese_print')
     # 去掉置信度小于0.9的文本
     i = 0
     while i < len(texts):
@@ -149,7 +165,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
 
     start_time = time.time()
     img_bytes = img_upload[0].file.read()
-    print(len(img_bytes))
+    # print(len(img_bytes))
     if img_upload is not None:
         img = convert_bytes_to_image(img_bytes)
     elif img_b64 is not None:
@@ -165,7 +181,17 @@ async def ocr(img_upload: List[UploadFile] = File(None),
 
     # 压缩图片
     img = compress_image(img, compress_size)
-    texts_confidence = get_texts(id)
+    texts_confidence = None
+    print("++++++++++++++")
+    # print(mysql_res)
+    if mysql_res is not None:
+        for row in mysql_res:
+            if row[0] == id:
+                texts_confidence = [row[1], row[2], row[3], row[4]]
+                # print(row[3])
+                break
+    else:
+        texts_confidence = get_texts(id)
 
     if label_extract:
         img = get_receipt_contours(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
@@ -173,35 +199,39 @@ async def ocr(img_upload: List[UploadFile] = File(None),
             data = {'code': 2, 'msg': '图片不合规,提取不到标签,请重新拍摄'}
             return MyORJSONResponse(content=data)
         # 文字方向检测
-        if texts_confidence[2]:
-            img = orientation_detect(img)
-            if img is None:
-                data = {'code': 2, 'msg': '图片不合规,文字方向检测错误,请重新拍摄'}
-                return MyORJSONResponse(content=data)
+        # if texts_confidence[2]:
+        #     img = orientation_detect(img)
+        #     if img is None:
+        #         data = {'code': 2, 'msg': '图片不合规,文字方向检测错误,请重新拍摄'}
+        #         return MyORJSONResponse(content=data)
 
         img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
     # texts = text_ocr(img, ocr_model)
-    texts = text_ocr_v4(img, texts_confidence[3])
-    for idx in range(len(texts)):
-        res = texts[idx]
-        print(idx)
-        for line in res:
-            print(line[1][1])
-    if len(texts[0]) == 0:
+
+    b64 = convert_image_to_b64(img)
+
+    texts = api_call(b64, texts_confidence[3])
+    # texts = text_ocr_v4(img, texts_confidence[3])
+    # for idx in range(len(texts)):
+    #     res = texts[idx]
+    #     print(idx)
+    #     for line in res:
+    #         print(line[1][1])
+    if len(texts) == 0:
         data = {'code': 2, 'msg': '图片不合规,提取不到文字,请重新拍摄'}
         return MyORJSONResponse(content=data)
 
-
-    print('|'.join(list(map(lambda x: x[1][0], texts[0]))))
-    # 去掉置信度小于0.8的文本
-    i = 0
-    while i < len(texts[0]):
-        if texts[0][i][1][1] < texts_confidence[1]:
-            texts[0].pop(i)
-            i -= 1
-        else:
-            i += 1
-    print('|'.join(list(map(lambda x: x[1][0], texts[0]))))
+    #
+    # print('|'.join(list(map(lambda x: x[1][0], texts))))
+    # # 去掉置信度小于0.8的文本
+    # i = 0
+    # while i < len(texts):
+    #     if texts[i][1][1] < texts_confidence[1]:
+    #         texts.pop(i)
+    #         i -= 1
+    #     else:
+    #         i += 1
+    # print('|'.join(list(map(lambda x: x[1][0], texts))))
     # img_drawed = draw_box_on_image(img.copy(), texts)
     # img_drawed_b64 = convert_image_to_b64(img_drawed)
     # result1 = re.sub(r'[\s,]*', '', '|'.join(list(map(lambda x: x[1][0], texts[0]))))
@@ -215,8 +245,8 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         # list1 = list(map(str, result1.split('|')))
         # length2 = len(list2)
         # length1 = len(list1)
-    percentage_a, filter_texts_a = texts_pair_algorithm_a(texts[0], texts_confidence[0])
-    percentage_b, filter_texts_b = texts_pair_algorithm_b(texts[0], texts_confidence[0])
+    percentage_a, filter_texts_a = texts_pair_algorithm_a(texts, texts_confidence[0])
+    percentage_b, filter_texts_b = texts_pair_algorithm_b(texts, texts_confidence[0])
     if percentage_a < percentage_b:
         percentage = percentage_a
         filter_texts = filter_texts_a
