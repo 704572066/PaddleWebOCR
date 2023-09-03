@@ -89,30 +89,27 @@
                  </a-select-option>
                 </a-select>
               </p>
-              <!-- <p>
+              <p>
                 选择模型:
-                <a-select default-value="ch_ppocr_server_v2.0_xx" style="width: 220px" @change="handleOrcModelChange">
-                 <a-select-option value="ch_ppocr_mobile_v2.0_xx">
-                   ch_ppocr_mobile_v2.0_xx
+                <a-select default-value="dataelem" style="width: 220px" @change="handleOrcModelChange">
+                 <a-select-option value="huawei">
+                   华为
                  </a-select-option>
-                 <a-select-option value="ch_PP-OCRv2_xx">
-                   ch_PP-OCRv2_xx
+                 <a-select-option value="baidu">
+                   百度
                  </a-select-option>
-                 <a-select-option value="ch_ppocr_server_v2.0_xx">
-                   ch_ppocr_server_v2.0_xx
-                 </a-select-option>
-                 <a-select-option value="chinese_cht_mobile_v2.0">
-                   chinese_cht_mobile_v2.0
+                 <a-select-option value="dataelem">
+                   数据项素
                  </a-select-option>
                 </a-select>
-              </p> -->
+              </p>
               <p>
                 选择检测语言:
-                <a-select default-value="english_print" style="width: 220px" @change="handleLanguageChange">
-                 <a-select-option value="english_print">
+                <a-select default-value="en" style="width: 220px" @change="handleLanguageChange">
+                 <a-select-option value="en">
                    英文
                  </a-select-option>
-                 <a-select-option value="chinese_print">
+                 <a-select-option value="ch">
                    中文
                  </a-select-option>
                 </a-select>
@@ -232,8 +229,8 @@ export default {
       hiddenOcrText: true, // 状态 是否显示经过提取后的文字结果
       comporessSize: 1600,
       confidence: 0, // 置信度
-      ocrModel: 'ch_ppocr_server_v2.0_xx',
-      language: 'english_print',
+      ocrModel: 'dataelem',
+      language: 'en',
       hiddenCompressBox:false,
       labelExtract:false
     }

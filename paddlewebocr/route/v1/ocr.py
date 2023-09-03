@@ -1,24 +1,27 @@
-import re
 import time
 
 import cv2
 import numpy as np
 import orjson
-import logging
 from typing import Any
 from fastapi import APIRouter, File, UploadFile, Form, status
 from fastapi.responses import ORJSONResponse, JSONResponse
 
-from paddlewebocr.pkg.dataelem_ocr import api_call
+from paddlewebocr.pkg.ocr.baidu_ocr import baidu_ocr
+from paddlewebocr.pkg.ocr.dataelem_ocr import dataelem_ocr
+from paddlewebocr.pkg.ocr.huawei_ocr import huawei_ocr
 from paddlewebocr.pkg.util import *
-from paddlewebocr.pkg.ocr import text_ocr, text_ocr_v4
 from paddlewebocr.pkg.db import save2db, get_imgs, get_texts
 from paddlewebocr.pkg.edge import get_receipt_contours
-from paddlewebocr.pkg.orientation import orientation_detect
-from paddlewebocr.pkg.pair import texts_pair_algorithm_aa, texts_pair_algorithm_bb
+from paddlewebocr.pkg.pair import texts_pair_algorithm_aa, texts_pair_algorithm_bb, split_texts
 from typing import List
 
+
+
 mysql_res = None
+
+
+
 class MyORJSONResponse(ORJSONResponse):
     media_type = "application/json"
 
@@ -50,12 +53,28 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     img = img.convert("RGB")
     img = compress_image(img, compress_size)
 
-    b64 = convert_image_to_b64(img)
+    if ocr_model == "huawei":
+        b64 = convert_image_to_b64(img)
+        texts = huawei_ocr(b64)
+        texts = split_texts(texts)
+    elif ocr_model == "dataelem":
+        # dataelem_ocr
+        b64 = convert_image_to_b64(img)
+        dataelem_language = ((language == "en") and "english_print" or "chinese_print")
+        texts = dataelem_ocr(b64, dataelem_language)
+        if(language == "ch"):
+            texts = split_texts(texts)
+    else:
+        # paddleocr
+        img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
+        # language = ( (language == "en") and "english_print" or "chinese_print")
+        texts = baidu_ocr(img, language)[0]
 
-    texts = api_call(b64, language)
 
 
-    # texts = text_ocr_v4(img, language)[0]
+
+
+
 
     # 去掉置信度小于0.9的文本
     print(texts)
@@ -98,7 +117,7 @@ async def images(vin: str = Form(None)):
         # pair.append('data:image/jpeg;base64,'+row[1])
         # pair.append('data:image/jpeg;base64,'+row[2])
         list.append(pair)
-        mysql_res.append([row[0], row[3], row[4], row[5], row[6]])
+        mysql_res.append([row[0], row[3], row[4], row[5], row[6],row[7],row[8]])
 
     data = {'code': 0, 'msg': '成功',
             'data': {'images': list}}
@@ -134,7 +153,7 @@ async def save(img_upload: List[UploadFile] = File(None),
     # texts = text_ocr_v4(img, language)[0]
     b64 = convert_image_to_b64(img)
 
-    texts = api_call(b64, language)
+    texts = dataelem_ocr(b64, language)
     # 去掉置信度小于0.9的文本
     # i = 0
     # while i < len(texts):
@@ -187,7 +206,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     if mysql_res is not None:
         for row in mysql_res:
             if row[0] == id:
-                texts_confidence = [row[1], row[2], row[3], row[4]]
+                texts_confidence = [row[1], row[2], row[3], row[4],row[5],row[6]]
                 # print(row[3])
                 break
     else:
@@ -208,9 +227,26 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
     # texts = text_ocr(img, ocr_model)
 
-    b64 = convert_image_to_b64(img)
-
-    texts = api_call(b64, texts_confidence[3])
+    # b64 = convert_image_to_b64(img)
+    ocr_model = texts_confidence[4]
+    language = texts_confidence[3]
+    wrong_percentage = texts_confidence[5]
+    if ocr_model == "huawei":
+        b64 = convert_image_to_b64(img)
+        texts = huawei_ocr(b64)
+        texts = split_texts(texts)
+    elif ocr_model == "dataelem":
+        # dataelem_ocr
+        b64 = convert_image_to_b64(img)
+        # dataelem_language = ((language == "en") and "english_print" or "chinese_print")
+        texts = dataelem_ocr(b64, language)
+        if language == "chinese_print":
+            texts = split_texts(texts)
+    else:
+        # paddleocr
+        img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
+        # language = ( (language == "en") and "english_print" or "chinese_print")
+        texts = baidu_ocr(img, language)[0]
     # texts = text_ocr_v4(img, texts_confidence[3])
     # for idx in range(len(texts)):
     #     res = texts[idx]
@@ -247,14 +283,14 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         # length1 = len(list1)
     percentage_a, filter_texts_a = texts_pair_algorithm_aa(texts, texts_confidence[0])
     percentage_b, filter_texts_b = texts_pair_algorithm_bb(texts, texts_confidence[0])
-    if percentage_a < percentage_b:
-        percentage = percentage_a
-        filter_texts = filter_texts_a
-    else:
+    if percentage_b < percentage_a:
         percentage = percentage_b
         filter_texts = filter_texts_b
+    else:
+        percentage = percentage_a
+        filter_texts = filter_texts_a
 
-    if percentage > 0.3:
+    if percentage > wrong_percentage:
         img_drawed = draw_box_on_image(img, filter_texts)
         img_drawed_b64 = convert_image_to_b64(img_drawed)
         data = {'code': 1, 'msg': '失败', 'data': {'img_detected': 'data:image/jpeg;base64,' + img_drawed_b64,

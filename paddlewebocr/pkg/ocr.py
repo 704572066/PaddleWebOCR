@@ -35,5 +35,8 @@ def text_ocr(img: Image, ocr_model: str) -> list:
 
 def text_ocr_v4(img: Image, language: str) -> list:
     # ocr = OCR.get(ocr_model, OCR["ch_ppocr_mobile_v2.0_xx"])
-    ocr = PaddleOCR(use_angle_cls=True, lang=language, enable_mkldnn=True)  # need to run only once to download and load model into memory
+    ocr = PaddleOCR(use_angle_cls=True, lang=language)  # need to run only once to download and load model into memory
     return ocr.ocr(np.array(img), cls=True)
+
+def baidu_ocr(img: Image, language: str) -> list:
+    return text_ocr_v4(img, language)
