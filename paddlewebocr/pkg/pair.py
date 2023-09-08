@@ -37,7 +37,7 @@ b = [
  'it'
 ]
 def texts_pair_algorithm_a(a, b):
-    result1 = re.sub(r'[,()（）:.\']*', '', '|'.join(list(map(lambda x: x[1][0], a))))
+    result1 = re.sub(r'[,()（）:.：\']*', '', '|'.join(list(map(lambda x: x[1][0], a))))
     result1 = re.sub(r'\s+', '|', result1)
 
     result2 = re.sub(r'[,()（）:.\']*', '', b)
@@ -67,10 +67,12 @@ def texts_pair_algorithm_a(a, b):
     return percentage, filter_texts
 
 def texts_pair_algorithm_aa(a, b):
-    result1 = re.sub(r'[,()（）:.。?\']*', '', '|'.join(list(map(lambda x: x[1][0], a))))
+    result1 = re.sub(r'[,()（）:.。?：;\'\"]*', '', '|'.join(list(map(lambda x: x[1][0], a))))
     result1 = re.sub(r'\s+', '|', result1)
+    result1 = re.sub('.R2TB-1532-EA', '|R2TB-1532-EA', result1)
+    result1 = re.sub('SEATINGCAPACITY.TOTAL', '|SEATINGCAPACITYTOTAL', result1)
 
-    result2 = re.sub(r'[,()（）:.。?\']*', '', b)
+    result2 = re.sub(r'[,()（）:.。?：;\'\"]*', '', b)
     result2 = re.sub(r'\s+', '|', result2)
     list2 = list(map(str, result2.split('|')))
     list1 = list(map(str, result1.split('|')))
@@ -78,14 +80,15 @@ def texts_pair_algorithm_aa(a, b):
     set_a = collections.Counter(list1)
     set_b = collections.Counter(list2)
 
-
+    print("aa set_a: %s" % set_a)
+    print("aa set_b: %s" % set_b)
     # print(set_b)
     # print('-----------\n')
     # print(set_a)
     remove_a = set_a - set_b
-    # print(remove_a)
+    print(remove_a)
     remove_b = set_b - set_a
-    # print(remove_b)
+    print(remove_b)
     vin1 = re.compile(".*5LMP.*")
     vin2 = re.compile(".*LVSP.*")
     list1 = list(filter(vin1.match, list(remove_b)))  # Read Note below
@@ -94,13 +97,15 @@ def texts_pair_algorithm_aa(a, b):
     if len(list1) > 0 or len(list2) > 0:
         percentage = 1
     # percentage = len(remove_b) / len(set_b)
-    filter_texts = list(filter(lambda x: not set(re.sub(r'\s+', '|', re.sub(r'[,()（）:.。?\']*', '', x[1][0])).split('|')).isdisjoint(remove_a), a))
-    # print(filter_texts)
+    filter_texts = list(filter(lambda x: not set(re.sub(r'\s+', '|', re.sub(r'[,()（）:.。?：;\'\"]*', '', x[1][0])).split('|')).isdisjoint(remove_a), a))
+    print(filter_texts)
     print("aa percentage: %s" % percentage)
     return percentage, filter_texts
 
 def texts_pair_algorithm_b(a, b):
     result1 = re.sub(r'[\s,()（）:.。\']*', '', '|'.join(list(map(lambda x: x[1][0], a))))
+    result1 = re.sub('.*R2TB-1532-EA', '|R2TB-1532-EA', result1)
+    result1 = re.sub('SEATINGCAPACITY.*TOTAL', '|SEATINGCAPACITYTOTAL', result1)
 
     result2 = re.sub(r'[\s,()（）:.。\']*', '', b)
     list2 = list(map(str, result2.split('|')))
@@ -126,18 +131,19 @@ def texts_pair_algorithm_b(a, b):
     print("bb percentage: %s" % percentage)
     return percentage, filter_texts
 
-
 def texts_pair_algorithm_bb(a, b):
-    result1 = re.sub(r'[\s,()（）:.。?\']*', '', '|'.join(list(map(lambda x: x[1][0], a))))
+    result1 = re.sub(r'[\s,()（）:.。?：;\'\"]*', '', '|'.join(list(map(lambda x: x[1][0], a))))
+    result1 = re.sub('.R2TB-1532-EA', '|R2TB-1532-EA', result1)
+    result1 = re.sub('SEATINGCAPACITY.TOTAL', '|SEATINGCAPACITYTOTAL', result1)
 
-    result2 = re.sub(r'[\s,()（）:.。?\']*', '', b)
+    result2 = re.sub(r'[\s,()（）:.。?：;\'\"]*', '', b)
     list2 = list(map(str, result2.split('|')))
     list1 = list(map(str, result1.split('|')))
 
     set_a = collections.Counter(list1)
-    print("set_a: %s" % set_a)
+    print("bb set_a: %s" % set_a)
     set_b = collections.Counter(list2)
-    print("set_b: %s" % set_b)
+    print("bb set_b: %s" % set_b)
     remove_a = set_a - set_b
     print(remove_a)
     remove_b = set_b - set_a
@@ -149,7 +155,7 @@ def texts_pair_algorithm_bb(a, b):
     percentage = sum(remove_b.values()) / sum(set_b.values())
     if len(list1) > 0 or len(list2) > 0:
         percentage = 1
-    filter_texts = list(filter(lambda x: re.sub(r'[\s,()（）:.。?\']*', '', x[1][0]) in remove_a, a))
+    filter_texts = list(filter(lambda x: re.sub(r'[\s,()（）:.。?：;\'\"]*', '', x[1][0]) in remove_a, a))
     # print(filter_texts)
     print("bb percentage: %s" % percentage)
     return percentage, filter_texts
@@ -159,20 +165,24 @@ def split_chinese(strings):
     for _char in strings:
         if ('\u0030' <= _char <= '\u0039') or (u'\u0041' <= _char <= u'\u005a') or (u'\u0061' <= _char <= u'\u007a'):
             return _char
-
+def split_shu(strings):
+    _char = None
+    for _char in strings:
+        if _char == '\u007c':
+            return _char
 def split_texts(texts):
     i = 0
     split_texts = []
     while i < len(texts):
         str = texts[i][1][0]
-        _char = split_chinese(str)
+        _char = split_shu(str)
         if _char is not None:
             index = str.find(_char)
             if 0 < index < len(str):
-                split_texts.append([texts[i][0], (str[: index], texts[i][1][1])])
-                split_texts.append([texts[i][0], (str[index:], texts[i][1][1])])
-                # i += 1
-                # continue
+                split_texts.append([texts[i][0], (re.sub('[|]', '', str[: index]), texts[i][1][1])])
+                split_texts.append([texts[i][0], (re.sub('[|]', '', str[index:]), texts[i][1][1])])
+                i += 1
+                continue
         split_texts.append([texts[i][0], (texts[i][1][0], texts[i][1][1])])
         i += 1
     return split_texts

@@ -3,7 +3,7 @@ import base64
 from io import BytesIO
 from PIL import Image, ImageDraw
 
-MAX_COMPRESS_SIZE = 1400
+MAX_COMPRESS_SIZE = 1600
 
 
 def compress_image(img: Image, compress_size: int) -> Image:
@@ -35,12 +35,12 @@ def rotate_image(img: Image) -> Image:
 
 def draw_box_on_image(img: Image, texts: list) -> Image:
     img_draw = ImageDraw.Draw(img)
-    colors = ['red', 'green', 'blue', "purple"]
+    colors = ['red','green','yellow']
     for line in texts:
         points = [tuple(point) for point in line[0]]
         points.append(points[0])
         # img_draw.polygon(points, outline=colors[random.randint(0, len(colors) - 1)])
-        img_draw.line(points, width=4, fill=colors[random.randint(0, len(colors) - 1)])
+        img_draw.line(points, width=8, fill=colors[random.randint(0, len(colors) - 1)])
     return img
 
 

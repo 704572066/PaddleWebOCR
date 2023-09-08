@@ -24,11 +24,12 @@ def dataelem_ocr(b64, scene):
     # print(res)
     bboxes = res['data']['json']['general_ocr_res']['bboxes']
     texts = res['data']['json']['general_ocr_res']['texts']
+    scores_norm = res['data']['json']['general_ocr_res']['scores_norm']
     i = 0
     array = []
     # print(len(bboxes))
     while i < len(bboxes):
-        array.append([bboxes[i], (texts[i], 1)])
+        array.append([bboxes[i], (texts[i], scores_norm[i])])
         i += 1
     # return array
     # print(array)

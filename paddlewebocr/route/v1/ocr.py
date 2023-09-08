@@ -1,3 +1,4 @@
+import collections
 import time
 
 import cv2
@@ -117,7 +118,7 @@ async def images(vin: str = Form(None)):
         # pair.append('data:image/jpeg;base64,'+row[1])
         # pair.append('data:image/jpeg;base64,'+row[2])
         list.append(pair)
-        mysql_res.append([row[0], row[3], row[4], row[5], row[6],row[7],row[8]])
+        mysql_res.append([row[0], row[3], row[4], row[5], row[6],row[7],row[8],row[9]])
 
     data = {'code': 0, 'msg': '成功',
             'data': {'images': list}}
@@ -152,8 +153,8 @@ async def save(img_upload: List[UploadFile] = File(None),
     # texts = text_ocr(img, ocr_model)
     # texts = text_ocr_v4(img, language)[0]
     b64 = convert_image_to_b64(img)
-
-    texts = dataelem_ocr(b64, language)
+    dataelem_language = ((language == "en") and "english_print" or "chinese_print")
+    texts = dataelem_ocr(b64, dataelem_language)
     # 去掉置信度小于0.9的文本
     # i = 0
     # while i < len(texts):
@@ -184,7 +185,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
 
     start_time = time.time()
     img_bytes = img_upload[0].file.read()
-    # print(len(img_bytes))
+    print(len(img_bytes))
     if img_upload is not None:
         img = convert_bytes_to_image(img_bytes)
     elif img_b64 is not None:
@@ -193,9 +194,9 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST,
                             content={'code': 4001, 'msg': '没有传入参数'})
 
-    img = rotate_image(img)
+    # img = rotate_image(img)
     t = time.localtime()
-    img = img.convert("RGB")
+    # img = img.convert("RGB")
     img.save("images/ford/%s_%s_%s_%s.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S", t), id, compress_size, label_extract))
 
     # 压缩图片
@@ -206,7 +207,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     if mysql_res is not None:
         for row in mysql_res:
             if row[0] == id:
-                texts_confidence = [row[1], row[2], row[3], row[4],row[5],row[6]]
+                texts_confidence = [row[1], row[2], row[3], row[4],row[5],row[6],row[7]]
                 # print(row[3])
                 break
     else:
@@ -231,11 +232,15 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     ocr_model = texts_confidence[4]
     language = texts_confidence[3]
     wrong_percentage = texts_confidence[5]
+    rotate = texts_confidence[6]
     if ocr_model == "huawei":
+        print("huawei")
+        img = img.rotate(rotate, expand=True)
         b64 = convert_image_to_b64(img)
         texts = huawei_ocr(b64)
         texts = split_texts(texts)
     elif ocr_model == "dataelem":
+        print("dataelem")
         # dataelem_ocr
         b64 = convert_image_to_b64(img)
         # dataelem_language = ((language == "en") and "english_print" or "chinese_print")
@@ -283,7 +288,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         # length1 = len(list1)
     percentage_a, filter_texts_a = texts_pair_algorithm_aa(texts, texts_confidence[0])
     percentage_b, filter_texts_b = texts_pair_algorithm_bb(texts, texts_confidence[0])
-    if percentage_b < percentage_a:
+    if percentage_b <= percentage_a:
         percentage = percentage_b
         filter_texts = filter_texts_b
     else:
@@ -291,6 +296,18 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         filter_texts = filter_texts_a
 
     if percentage > wrong_percentage:
+        # list(map(lambda x: x[1][0], a)
+        filter_texts = list(filter(lambda x: x[1][0] in list(map(lambda x: x[1][0], filter_texts_a)), filter_texts_b))
+        # print(filter_texts_b)
+        # print(filter_texts_a)
+        # 去掉置信度小于0.8的文本
+        i = 0
+        while i < len(filter_texts):
+            if filter_texts[i][1][1] < texts_confidence[1]:
+                filter_texts.pop(i)
+                i -= 1
+            else:
+                i += 1
         img_drawed = draw_box_on_image(img, filter_texts)
         img_drawed_b64 = convert_image_to_b64(img_drawed)
         data = {'code': 1, 'msg': '失败', 'data': {'img_detected': 'data:image/jpeg;base64,' + img_drawed_b64,
