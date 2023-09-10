@@ -3,7 +3,7 @@ import base64
 from io import BytesIO
 from PIL import Image, ImageDraw
 
-MAX_COMPRESS_SIZE = 1600
+MAX_COMPRESS_SIZE = 2000
 
 
 def compress_image(img: Image, compress_size: int) -> Image:
@@ -11,10 +11,12 @@ def compress_image(img: Image, compress_size: int) -> Image:
         return img
 
     if img.height > MAX_COMPRESS_SIZE or img.width > MAX_COMPRESS_SIZE:
-        scale = max(img.height / MAX_COMPRESS_SIZE, img.width / MAX_COMPRESS_SIZE)
+        scale = max(img.height / compress_size, img.width / compress_size)
 
         new_width = int(img.width / scale + 0.5)
         new_height = int(img.height / scale + 0.5)
+        print("new_width: %s" % new_width)
+        print("new_height: %s" % new_height)
         img = img.resize((new_width, new_height), Image.LANCZOS)
     return img
 

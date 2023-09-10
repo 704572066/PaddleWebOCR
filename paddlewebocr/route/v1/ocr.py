@@ -14,7 +14,7 @@ from paddlewebocr.pkg.ocr.huawei_ocr import huawei_ocr
 from paddlewebocr.pkg.util import *
 from paddlewebocr.pkg.db import save2db, get_imgs, get_texts
 from paddlewebocr.pkg.edge import get_receipt_contours
-from paddlewebocr.pkg.pair import texts_pair_algorithm_aa, texts_pair_algorithm_bb, split_texts
+from paddlewebocr.pkg.pair import texts_pair_algorithm_aa, texts_pair_algorithm_bb, split_texts, texts_pair_algorithm
 from typing import List
 
 
@@ -272,7 +272,8 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     #         i -= 1
     #     else:
     #         i += 1
-    # print('|'.join(list(map(lambda x: x[1][0], texts))))
+    print(list(map(lambda x: x[1][0], texts)))
+    print(texts)
     # img_drawed = draw_box_on_image(img.copy(), texts)
     # img_drawed_b64 = convert_image_to_b64(img_drawed)
     # result1 = re.sub(r'[\s,]*', '', '|'.join(list(map(lambda x: x[1][0], texts[0]))))
@@ -286,20 +287,22 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         # list1 = list(map(str, result1.split('|')))
         # length2 = len(list2)
         # length1 = len(list1)
-    percentage_a, filter_texts_a = texts_pair_algorithm_aa(texts, texts_confidence[0])
-    percentage_b, filter_texts_b = texts_pair_algorithm_bb(texts, texts_confidence[0])
-    if percentage_b <= percentage_a:
-        percentage = percentage_b
-        filter_texts = filter_texts_b
-    else:
-        percentage = percentage_a
-        filter_texts = filter_texts_a
+    # percentage_a, filter_texts_a = texts_pair_algorithm_aa(texts, texts_confidence[0])
+    # percentage_b, filter_texts_b = texts_pair_algorithm_bb(texts, texts_confidence[0])
+    # if percentage_b <= percentage_a:
+    #     percentage = percentage_b
+    #     filter_texts = filter_texts_b
+    # else:
+    #     percentage = percentage_a
+    #     filter_texts = filter_texts_a
+    percentage, filter_texts = texts_pair_algorithm(texts, texts_confidence[0])
+
 
     if percentage > wrong_percentage:
         # list(map(lambda x: x[1][0], a)
-        filter_texts = list(filter(lambda x: x[1][0] in list(map(lambda x: x[1][0], filter_texts_a)), filter_texts_b))
-        # print(filter_texts_b)
-        # print(filter_texts_a)
+        # filter_texts = list(filter(lambda x: x[1][0] in list(map(lambda x: x[1][0], filter_texts_a)), filter_texts_b))
+        # print("filter_texts_b: %s" % filter_texts_b)
+        # print("filter_texts_a: %s" % filter_texts_a)
         # 去掉置信度小于0.8的文本
         i = 0
         while i < len(filter_texts):
