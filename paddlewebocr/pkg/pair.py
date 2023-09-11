@@ -1,72 +1,25 @@
 import collections
 import re
 
-a = [
- 'And',
- "you're",
- 'going',
- 'to',
- 'use',
- 'some',
- 'handouts.',
- 'Okay.',
- 'So',
- 'I',
- 'needed',
- 'to',
- 'know',
- 'and',
- 'for,'
-]
-
-b = [
- 'And',
- "you're",
- 'going',
- 'to',
- 'use',
- 'some',
- 'handouts.',
- 'Okay.',
- 'I',
- 'needed',
- 'to',
- 'know',
- 'and',
- 'for,',
- 'it'
-]
-def texts_pair_algorithm_a(a, b):
-    result1 = re.sub(r'[,()（）:.：\']*', '', '|'.join(list(map(lambda x: x[1][0], a))))
+def re_sub_aa(text, remove):
+    result1 = re.sub(r'[,()（）:.。?：;，、\'\"]*', '', text)
     result1 = re.sub(r'\s+', '|', result1)
+    result1 = re.sub('.R2TB-1532-EA', '|R2TB-1532-EA', result1)
+    result1 = re.sub('SEATINGCAPACITY.TOTAL', '|SEATINGCAPACITYTOTAL', result1)
+    result1 = re.sub(r'制造年月[/1]', '制造年月', result1)
+    result1 = re.sub(r'福特多', '福特', result1)
+    result1 = re.sub(r'公司.+造[|]', '公司制造|', result1)
+    return not set(list(filter(lambda x: x, result1.split('|')))).isdisjoint(remove)
 
-    result2 = re.sub(r'[,()（）:.\']*', '', b)
-    result2 = re.sub(r'\s+', '|', result2)
-    list2 = list(map(str, result2.split('|')))
-    list1 = list(map(str, result1.split('|')))
-
-    set_a = set(list1)
-    set_b = set(list2)
-    # print(set_b)
-    # print('-----------\n')
-    # print(set_a)
-    remove_a = set_a - set_b
-    # print(remove_a)
-    remove_b = set_b - set_a
-    # print(remove_b)
-    vin1 = re.compile(".*5LMP.*")
-    vin2 = re.compile(".*LVSP.*")
-    list1 = list(filter(vin1.match, list(remove_b)))  # Read Note below
-    list2 = list(filter(vin2.match, list(remove_b)))  # Read Note below
-    percentage = len(remove_b) / len(set_b)
-    if len(list1) > 0 or len(list2) > 0:
-        percentage = 1
-    # percentage = len(remove_b) / len(set_b)
-    filter_texts = list(filter(lambda x: not set(re.sub(r'\s+', '|', re.sub(r'[,()（）:.\']*', '', x[1][0])).split('|')).isdisjoint(remove_a), a))
-    # print(filter_texts)
-    return percentage, filter_texts
-
-
+def re_sub_bb(text, remove):
+    result1 = re.sub(r'[\s,()（）:.。?：;，、\'\"]*', '', text)
+    # result1 = re.sub(r'\s+', '|', result1)
+    result1 = re.sub('.R2TB-1532-EA', '|R2TB-1532-EA', result1)
+    result1 = re.sub('SEATINGCAPACITY.TOTAL', '|SEATINGCAPACITYTOTAL', result1)
+    result1 = re.sub(r'制造年月[/1]', '制造年月', result1)
+    result1 = re.sub(r'福特多', '福特', result1)
+    result1 = re.sub(r'公司.+造[|]', '公司制造|', result1)
+    return result1 in remove
 def texts_pair_algorithm(a, b):
     percentage_a, filter_texts_a, aa_vin = texts_pair_algorithm_aa(a, b)
     percentage_b, filter_texts_b, set_b, remove_b, bb_vin = texts_pair_algorithm_bb(a, b)
@@ -95,11 +48,16 @@ def texts_pair_algorithm_aa(a, b):
     result1 = re.sub('.R2TB-1532-EA', '|R2TB-1532-EA', result1)
     result1 = re.sub('SEATINGCAPACITY.TOTAL', '|SEATINGCAPACITYTOTAL', result1)
     result1 = re.sub(r'制造年月[/1]', '制造年月', result1)
+    result1 = re.sub(r'福特多', '福特', result1)
+    result1 = re.sub(r'公司.+造[|]', '公司制造|', result1)
 
     result2 = re.sub(r'[,()（）:.。?：;，、\'\"]*', '', b)
     result2 = re.sub(r'\s+', '|', result2)
     list2 = list(map(str, result2.split('|')))
     list1 = list(map(str, result1.split('|')))
+
+    # 去除空值
+    # list1 = list(filter(lambda x: x, list1))
 
     set_a = collections.Counter(list1)
     set_b = collections.Counter(list2)
@@ -122,45 +80,19 @@ def texts_pair_algorithm_aa(a, b):
     if len(list1) > 0 or len(list2) > 0:
         aa_vin = True
     # percentage = len(remove_b) / len(set_b)
-    filter_texts = list(filter(lambda x: not set(list(filter(lambda x: x, re.sub(r'制造年月[/1]', '制造年月',re.sub('SEATINGCAPACITY.TOTAL', '|SEATINGCAPACITYTOTAL',re.sub('.R2TB-1532-EA', '|R2TB-1532-EA', re.sub(r'\s+', '|',re.sub(r'[,()（）:.。?：;，、\'\"]*','', x[1][0]))))).split('|')))).isdisjoint(remove_a), a))
+    # filter_texts = list(filter(lambda x: not set(list(filter(lambda x: x, re.sub(r'制造年月[/1]', '制造年月',re.sub('SEATINGCAPACITY.TOTAL', '|SEATINGCAPACITYTOTAL',re.sub('.R2TB-1532-EA', '|R2TB-1532-EA', re.sub(r'\s+', '|',re.sub(r'[,()（）:.。?：;，、\'\"]*','', x[1][0]))))).split('|')))).isdisjoint(remove_a), a))
+    filter_texts = list(filter(lambda x: re_sub_aa(x[1][0], remove_a), a))
     print(filter_texts)
     print("aa percentage: %s" % percentage)
     return percentage, filter_texts, aa_vin
-
-def texts_pair_algorithm_b(a, b):
-    result1 = re.sub(r'[\s,()（）:.。\']*', '', '|'.join(list(map(lambda x: x[1][0], a))))
-    result1 = re.sub('.*R2TB-1532-EA', '|R2TB-1532-EA', result1)
-    result1 = re.sub('SEATINGCAPACITY.*TOTAL', '|SEATINGCAPACITYTOTAL', result1)
-
-    result2 = re.sub(r'[\s,()（）:.。\']*', '', b)
-    list2 = list(map(str, result2.split('|')))
-    list1 = list(map(str, result1.split('|')))
-
-    set_a = set(list1)
-    print("set_a: %s" % set_a)
-    set_b = set(list2)
-    print("set_b: %s" % set_b)
-    remove_a = set_a - set_b
-    print(remove_a)
-    remove_b = set_b - set_a
-    print(remove_b)
-    vin1 = re.compile(".*5LMP.*")
-    vin2 = re.compile(".*LVSP.*")
-    list1 = list(filter(vin1.match, list(remove_b)))  # Read Note below
-    list2 = list(filter(vin2.match, list(remove_b)))  # Read Note below
-    percentage = len(remove_b) / len(set_b)
-    if len(list1) > 0 or len(list2) > 0:
-        percentage = 1
-    filter_texts = list(filter(lambda x: re.sub(r'[\s,()（）:.\']*', '', x[1][0]) in remove_a, a))
-    # print(filter_texts)
-    print("bb percentage: %s" % percentage)
-    return percentage, filter_texts
 
 def texts_pair_algorithm_bb(a, b):
     result1 = re.sub(r'[\s,()（）:.。?：;，、\'\"]*', '', '|'.join(list(map(lambda x: x[1][0], a))))
     result1 = re.sub('.R2TB-1532-EA', '|R2TB-1532-EA', result1)
     result1 = re.sub('SEATINGCAPACITY.TOTAL', '|SEATINGCAPACITYTOTAL', result1)
     result1 = re.sub(r'制造年月[/1]', '制造年月', result1)
+    result1 = re.sub(r'福特多', '福特', result1)
+    result1 = re.sub(r'公司.+造[|]', '公司制造|', result1)
 
     result2 = re.sub(r'[\s,()（）:.。?：;，、\'\"]*', '', b)
     list2 = list(map(str, result2.split('|')))
@@ -182,7 +114,8 @@ def texts_pair_algorithm_bb(a, b):
     bb_vin = False
     if len(list1) > 0 or len(list2) > 0:
         bb_vin = True
-    filter_texts = list(filter(lambda x: re.sub(r'制造年月[/1]', '制造年月', re.sub('SEATINGCAPACITY.TOTAL', '|SEATINGCAPACITYTOTAL', re.sub('.R2TB-1532-EA', '|R2TB-1532-EA', re.sub(r'[\s,()（）:.。?：;，、\'\"]*', '', x[1][0])))) in remove_a, a))
+    # filter_texts = list(filter(lambda x: re.sub(r'制造年月[/1]', '制造年月', re.sub('SEATINGCAPACITY.TOTAL', '|SEATINGCAPACITYTOTAL', re.sub('.R2TB-1532-EA', '|R2TB-1532-EA', re.sub(r'[\s,()（）:.。?：;，、\'\"]*', '', x[1][0])))) in remove_a, a))
+    filter_texts = list(filter(lambda x: re_sub_bb(x[1][0], remove_a), a))
     # print(filter_texts)
     print("bb percentage: %s" % percentage)
     return percentage, filter_texts, set_b, remove_b, bb_vin
