@@ -194,10 +194,10 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST,
                             content={'code': 4001, 'msg': '没有传入参数'})
 
-    # img = rotate_image(img)
+    img = rotate_image(img)
     t = time.localtime()
     # img = img.convert("RGB")
-    img.save("images/ford/%s_%s_%s_%s.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S", t), id, compress_size, label_extract))
+    img.save("images/ford/%s_%s_%s_%s.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S", t), id, compress_size, label_extract), format="JPEG", quality=100)
 
     # 压缩图片
     img = compress_image(img, compress_size)
@@ -312,6 +312,8 @@ async def ocr(img_upload: List[UploadFile] = File(None),
             else:
                 i += 1
         img_drawed = draw_box_on_image(img, filter_texts)
+        img_drawed.save("images/ford/%s_%s_%s_%s_fail.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S", t), id, compress_size, label_extract))
+
         img_drawed_b64 = convert_image_to_b64(img_drawed)
         data = {'code': 1, 'msg': '失败', 'data': {'img_detected': 'data:image/jpeg;base64,' + img_drawed_b64,
                                                    'speed_time': round(time.time() - start_time, 2)}}
