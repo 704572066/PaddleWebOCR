@@ -11,8 +11,9 @@ def re_sub(result1):
     return result1
 
 def re_sub_aa(text, remove):
-    result1 = re.sub(r'[,()（）:.。?：;，、\'\"]*', '', text)
-    result1 = re.sub(r'\s+', '|', result1)
+    result1 = re.sub(r'[,()（）.。?;，、\"]*', '', text)
+    # 单引号和冒号不替换为空而是替换成|  避免这种情况："SEATING CAPACITY ' TOTAL： 5 'FRONT :2'REAR:3"
+    result1 = re.sub(r'[：:\s\']+', '|', result1)
     result1 = re_sub(result1)
     return not set(list(filter(lambda x: x, result1.split('|')))).isdisjoint(remove)
 
@@ -44,8 +45,9 @@ def texts_pair_algorithm(a, b):
 
 
 def texts_pair_algorithm_aa(a, b):
-    result1 = re.sub(r'[,()（）:.。?：;，、\'\"]*', '', '|'.join(list(map(lambda x: x[1][0], a))))
-    result1 = re.sub(r'\s+', '|', result1)
+    result1 = re.sub(r'[,()（）.。?;，、\"]*', '', '|'.join(list(map(lambda x: x[1][0], a))))
+    # 单引号和冒号不替换为空而是替换成|  避免这种情况："SEATING CAPACITY ' TOTAL： 5 'FRONT :2'REAR:3"
+    result1 = re.sub(r'[：:\s\']+', '|', result1)
     result1 = re_sub(result1)
 
     result2 = re.sub(r'[,()（）:.。?：;，、\'\"]*', '', b)
