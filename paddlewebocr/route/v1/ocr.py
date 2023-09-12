@@ -1,6 +1,6 @@
 import collections
 import time
-
+import uuid
 import cv2
 import numpy as np
 import orjson
@@ -16,6 +16,7 @@ from paddlewebocr.pkg.db import save2db, get_imgs, get_texts
 from paddlewebocr.pkg.edge import get_receipt_contours
 from paddlewebocr.pkg.pair import texts_pair_algorithm_aa, texts_pair_algorithm_bb, split_texts, texts_pair_algorithm
 from typing import List
+
 
 
 
@@ -51,8 +52,8 @@ async def ocr(img_upload: List[UploadFile] = File(None),
                             content={'code': 4001, 'msg': '没有传入参数'})
 
     img = rotate_image(img)
-    img = img.convert("RGB")
-    img = compress_image(img, compress_size)
+    # img = img.convert("RGB")
+    # img = compress_image(img, compress_size)
 
     if ocr_model == "huawei":
         b64 = convert_image_to_b64(img)
@@ -152,9 +153,27 @@ async def save(img_upload: List[UploadFile] = File(None),
     # img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
     # texts = text_ocr(img, ocr_model)
     # texts = text_ocr_v4(img, language)[0]
-    b64 = convert_image_to_b64(img)
-    dataelem_language = ((language == "en") and "english_print" or "chinese_print")
-    texts = dataelem_ocr(b64, dataelem_language)
+
+    if ocr_model == "huawei":
+        b64 = convert_image_to_b64(img)
+        texts = huawei_ocr(b64)
+        texts = split_texts(texts)
+    elif ocr_model == "dataelem":
+        # dataelem_ocr
+        b64 = convert_image_to_b64(img)
+        dataelem_language = ((language == "en") and "english_print" or "chinese_print")
+        texts = dataelem_ocr(b64, dataelem_language)
+        if(language == "ch"):
+            texts = split_texts(texts)
+    else:
+        # paddleocr
+        img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
+        # language = ( (language == "en") and "english_print" or "chinese_print")
+        texts = baidu_ocr(img, language)[0]
+
+    # b64 = convert_image_to_b64(img)
+    # dataelem_language = ((language == "en") and "english_print" or "chinese_print")
+    # texts = dataelem_ocr(b64, dataelem_language)
     # 去掉置信度小于0.9的文本
     # i = 0
     # while i < len(texts):
@@ -197,7 +216,8 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     img = rotate_image(img)
     t = time.localtime()
     # img = img.convert("RGB")
-    img.save("images/ford/%s_%s_%s_%s.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S", t), id, compress_size, label_extract), format="JPEG", quality=100)
+    uid = uuid.uuid4()
+    img.save("images/ford/%s_%s_%s_%s.jpg" % (uid, id, compress_size, label_extract), format="JPEG", quality=100)
 
     # 压缩图片
     img = compress_image(img, compress_size)
@@ -241,6 +261,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         texts = split_texts(texts)
     elif ocr_model == "dataelem":
         print("dataelem")
+        img = img.rotate(rotate, expand=True)
         # dataelem_ocr
         b64 = convert_image_to_b64(img)
         # dataelem_language = ((language == "en") and "english_print" or "chinese_print")
@@ -312,13 +333,17 @@ async def ocr(img_upload: List[UploadFile] = File(None),
             else:
                 i += 1
         img_drawed = draw_box_on_image(img, filter_texts)
-        img_drawed.save("images/ford/%s_%s_%s_%s_fail.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S", t), id, compress_size, label_extract))
+        img_drawed.save("images/ford/%s_%s_%s_%s_fail.jpg" % (uid, id, compress_size, label_extract))
 
         img_drawed_b64 = convert_image_to_b64(img_drawed)
         data = {'code': 1, 'msg': '失败', 'data': {'img_detected': 'data:image/jpeg;base64,' + img_drawed_b64,
                                                    'speed_time': round(time.time() - start_time, 2)}}
         # list(map(lambda x: x, texts))
     else:
+        if percentage > 0:
+            img_drawed = draw_text_on_image(img, filter_texts)
+            img_drawed.save("images/ford/%s_%s_%s_%s_success.jpg" % (uid, id, compress_size, label_extract))
+
         data = {'code': 0, 'msg': '成功', 'data': {'percentage': percentage,'speed_time': round(time.time() - start_time, 2)}}
     # if length1 <= length2:
     #     for i, text in enumerate(list1):

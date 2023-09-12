@@ -1,7 +1,7 @@
 import random
 import base64
 from io import BytesIO
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 MAX_COMPRESS_SIZE = 2000
 
@@ -43,6 +43,18 @@ def draw_box_on_image(img: Image, texts: list) -> Image:
         points.append(points[0])
         # img_draw.polygon(points, outline=colors[random.randint(0, len(colors) - 1)])
         img_draw.line(points, width=8, fill=colors[random.randint(0, len(colors) - 1)])
+    return img
+
+def draw_text_on_image(img: Image, texts: list) -> Image:
+    img_draw = ImageDraw.Draw(img)
+    colors = ['red','green','yellow']
+    font = ImageFont.truetype("arial.ttf", 32)
+    for line in texts:
+        points = [tuple(point) for point in line[0]]
+        points.append(points[0])
+        # img_draw.polygon(points, outline=colors[random.randint(0, len(colors) - 1)])
+        img_draw.line(points, width=8, fill=colors[random.randint(0, len(colors) - 1)])
+        img_draw.text(points[0], line[1][0], fill=colors[random.randint(0, len(colors) - 1)], font=font)
     return img
 
 

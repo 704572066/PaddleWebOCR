@@ -1,24 +1,25 @@
 import collections
 import re
 
-def re_sub_aa(text, remove):
-    result1 = re.sub(r'[,()（）:.。?：;，、\'\"]*', '', text)
-    result1 = re.sub(r'\s+', '|', result1)
+# 特殊处理
+def re_sub(result1):
     result1 = re.sub('.R2TB-1532-EA', '|R2TB-1532-EA', result1)
     result1 = re.sub('SEATINGCAPACITY.TOTAL', '|SEATINGCAPACITYTOTAL', result1)
     result1 = re.sub(r'制造年月[/1]', '制造年月', result1)
     result1 = re.sub(r'福特多', '福特', result1)
     result1 = re.sub(r'公司.+造[|]', '公司制造|', result1)
+    return result1
+
+def re_sub_aa(text, remove):
+    result1 = re.sub(r'[,()（）:.。?：;，、\'\"]*', '', text)
+    result1 = re.sub(r'\s+', '|', result1)
+    result1 = re_sub(result1)
     return not set(list(filter(lambda x: x, result1.split('|')))).isdisjoint(remove)
 
 def re_sub_bb(text, remove):
     result1 = re.sub(r'[\s,()（）:.。?：;，、\'\"]*', '', text)
     # result1 = re.sub(r'\s+', '|', result1)
-    result1 = re.sub('.R2TB-1532-EA', '|R2TB-1532-EA', result1)
-    result1 = re.sub('SEATINGCAPACITY.TOTAL', '|SEATINGCAPACITYTOTAL', result1)
-    result1 = re.sub(r'制造年月[/1]', '制造年月', result1)
-    result1 = re.sub(r'福特多', '福特', result1)
-    result1 = re.sub(r'公司.+造[|]', '公司制造|', result1)
+    result1 = re_sub(result1)
     return result1 in remove
 def texts_pair_algorithm(a, b):
     percentage_a, filter_texts_a, aa_vin = texts_pair_algorithm_aa(a, b)
@@ -45,11 +46,7 @@ def texts_pair_algorithm(a, b):
 def texts_pair_algorithm_aa(a, b):
     result1 = re.sub(r'[,()（）:.。?：;，、\'\"]*', '', '|'.join(list(map(lambda x: x[1][0], a))))
     result1 = re.sub(r'\s+', '|', result1)
-    result1 = re.sub('.R2TB-1532-EA', '|R2TB-1532-EA', result1)
-    result1 = re.sub('SEATINGCAPACITY.TOTAL', '|SEATINGCAPACITYTOTAL', result1)
-    result1 = re.sub(r'制造年月[/1]', '制造年月', result1)
-    result1 = re.sub(r'福特多', '福特', result1)
-    result1 = re.sub(r'公司.+造[|]', '公司制造|', result1)
+    result1 = re_sub(result1)
 
     result2 = re.sub(r'[,()（）:.。?：;，、\'\"]*', '', b)
     result2 = re.sub(r'\s+', '|', result2)
@@ -88,11 +85,7 @@ def texts_pair_algorithm_aa(a, b):
 
 def texts_pair_algorithm_bb(a, b):
     result1 = re.sub(r'[\s,()（）:.。?：;，、\'\"]*', '', '|'.join(list(map(lambda x: x[1][0], a))))
-    result1 = re.sub('.R2TB-1532-EA', '|R2TB-1532-EA', result1)
-    result1 = re.sub('SEATINGCAPACITY.TOTAL', '|SEATINGCAPACITYTOTAL', result1)
-    result1 = re.sub(r'制造年月[/1]', '制造年月', result1)
-    result1 = re.sub(r'福特多', '福特', result1)
-    result1 = re.sub(r'公司.+造[|]', '公司制造|', result1)
+    result1 = re_sub(result1)
 
     result2 = re.sub(r'[\s,()（）:.。?：;，、\'\"]*', '', b)
     list2 = list(map(str, result2.split('|')))
