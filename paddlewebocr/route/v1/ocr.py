@@ -114,7 +114,7 @@ async def images(vin: str = Form(None)):
     list = []
     # pair  = []
     for row in results:
-        pair = {'id':row[0],'location_img':'data:image/jpeg;base64,'+row[1],'label_img':'data:image/jpeg;base64,'+row[2]}
+        pair = {'id':row[0],'location_img':'data:image/jpeg;base64,'+row[1],'label_img':'data:image/jpeg;base64,'+row[2],'rotate':row[9]}
         # pair.append(row[0])
         # pair.append('data:image/jpeg;base64,'+row[1])
         # pair.append('data:image/jpeg;base64,'+row[2])

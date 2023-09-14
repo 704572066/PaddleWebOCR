@@ -22,6 +22,40 @@ def re_sub_bb(text, remove):
     # result1 = re.sub(r'\s+', '|', result1)
     result1 = re_sub(result1)
     return result1 in remove
+
+def text_split(x):
+    # print(X)
+    result1 = re.sub(r'[,()（）.。?;，、\"]*', '', x)
+    result1 = re.sub(r'[：:\s\']+', '|', result1)
+    result1 = '|'+re_sub(result1)+'|'
+    result1 = result1.replace('||', '|')
+    # print("text1: "+ result1)
+    return result1
+
+
+def collection_counter(a, b):
+    result1 = list(map(text_split, list(map(lambda x: x[1][0], a))))
+    # 单引号和冒号不替换为空而是替换成|  避免这种情况："SEATING CAPACITY ' TOTAL： 5 'FRONT :2'REAR:3"
+    print(result1)
+
+    result2 = re.sub(r'[,()（）:.。?：;，、\'\"]*', '', b)
+    result2 = '|' + re.sub(r'\s+', '|', result2) + '|'
+    print(result2)
+
+    # list1 = list(filter(lambda x: not x in result2, result1))
+    list1 = []
+    for item in result1:
+        print(item)
+        if item in result2:
+            # list1.append(item)
+            result2 = result2.replace(item, '|', 1)
+            # print(result2)
+        else:
+            list1.append(item)
+    # print('A|B' in 'A|B|D|B')
+    list1 = list(filter(lambda x: x, ('|'.join(list1).split('|'))))
+    return collections.Counter(list1)
+
 def texts_pair_algorithm(a, b):
     percentage_a, filter_texts_a, aa_vin = texts_pair_algorithm_aa(a, b)
     percentage_b, filter_texts_b, set_b, remove_b, bb_vin = texts_pair_algorithm_bb(a, b)
@@ -66,7 +100,9 @@ def texts_pair_algorithm_aa(a, b):
     # print(set_b)
     # print('-----------\n')
     # print(set_a)
-    remove_a = set_a - set_b
+    # remove_a = set_a - set_b
+    # 考虑到这种情况：Manufacturer and Vehicle commercial Name 和 Manufacturer Name, 不使用set_a - set_b
+    remove_a = collection_counter(a, b)
     print(remove_a)
     remove_b = set_b - set_a
     print(remove_b)
