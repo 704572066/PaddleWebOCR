@@ -11,21 +11,34 @@ def re_sub(result1):
     return result1
 
 def re_sub_aa(text, remove):
-    result1 = re.sub(r'[,()（）.。?;，、\"]*', '', text)
+    # 先把字符串中的float的点号替换成^,再过滤其他点号,最后把^再替换成点号，目的是保留float类型的数字中的点号
+    text = re.sub(r'([0-9])[.]([0-9])', r'\g<1>^\g<2>', text)
+    text = re.sub(r'[,()（）.。?;，、\"]*', '', text)
+    result1 = re.sub(r'([0-9])[\^]([0-9])', r'\g<1>.\g<2>', text)
+
     # 单引号和冒号不替换为空而是替换成|  避免这种情况："SEATING CAPACITY ' TOTAL： 5 'FRONT :2'REAR:3"
     result1 = re.sub(r'[：:\s\']+', '|', result1)
     result1 = re_sub(result1)
     return not set(list(filter(lambda x: x, result1.split('|')))).isdisjoint(remove)
 
 def re_sub_bb(text, remove):
-    result1 = re.sub(r'[\s,()（）:.。?：;，、\'\"]*', '', text)
+    # 先把字符串中的float的点号替换成^,再过滤其他点号,最后把^再替换成点号，目的是保留float类型的数字中的点号
+    text = re.sub(r'([0-9])[.]([0-9])', r'\g<1>^\g<2>', text)
+    text = re.sub(r'[\s,()（）:.。?：;，、\'\"]*', '', text)
+    result1 = re.sub(r'([0-9])[\^]([0-9])', r'\g<1>.\g<2>', text)
+    # result1 = re.sub(r'[\s,()（）:.。?：;，、\'\"]*', '', text)
     # result1 = re.sub(r'\s+', '|', result1)
     result1 = re_sub(result1)
     return result1 in remove
 
 def text_split(x):
     # print(X)
-    result1 = re.sub(r'[,()（）.。?;，、\"]*', '', x)
+    # 先把字符串中的float的点号替换成^,再过滤其他点号,最后把^再替换成点号，目的是保留float类型的数字中的点号
+    x = re.sub(r'([0-9])[.]([0-9])', r'\g<1>^\g<2>', x)
+    x = re.sub(r'[,()（）.。?;，、\"]*', '', x)
+    result1 = re.sub(r'([0-9])[\^]([0-9])', r'\g<1>.\g<2>', x)
+
+    # result1 = re.sub(r'[,()（）.。?;，、\"]*', '', x)
     result1 = re.sub(r'[：:\s\']+', '|', result1)
     result1 = '|'+re_sub(result1)+'|'
     result1 = result1.replace('||', '|')
@@ -38,7 +51,11 @@ def collection_counter(a, b):
     # 单引号和冒号不替换为空而是替换成|  避免这种情况："SEATING CAPACITY ' TOTAL： 5 'FRONT :2'REAR:3"
     print(result1)
 
-    result2 = re.sub(r'[,()（）:.。?：;，、\'\"]*', '', b)
+    # 先把字符串中的float的点号替换成^,再过滤其他点号,最后把^再替换成点号，目的是保留float类型的数字中的点号
+    b = re.sub(r'([0-9])[.]([0-9])', r'\g<1>^\g<2>', b)
+    b = re.sub(r'[,()（）:.。?：;，、\'\"]*', '', b)
+    result2 = re.sub(r'([0-9])[\^]([0-9])', r'\g<1>.\g<2>', b)
+    # result2 = re.sub(r'[,()（）:.。?：;，、\'\"]*', '', b)
     result2 = '|' + re.sub(r'\s+', '|', result2) + '|'
     print(result2)
 
@@ -79,12 +96,21 @@ def texts_pair_algorithm(a, b):
 
 
 def texts_pair_algorithm_aa(a, b):
-    result1 = re.sub(r'[,()（）.。?;，、\"]*', '', '|'.join(list(map(lambda x: x[1][0], a))))
+    a_str = '|'.join(list(map(lambda x: x[1][0], a)))
+    # 先把字符串中的float的点号替换成^,再过滤其他点号,最后把^再替换成点号，目的是保留float类型的数字中的点号
+    a_str = re.sub(r'([0-9])[.]([0-9])', r'\g<1>^\g<2>', a_str)
+    a_str = re.sub(r'[,()（）.。?;，、\"]*', '', a_str)
+    result1 = re.sub(r'([0-9])[\^]([0-9])', r'\g<1>.\g<2>', a_str)
+
     # 单引号和冒号不替换为空而是替换成|  避免这种情况："SEATING CAPACITY ' TOTAL： 5 'FRONT :2'REAR:3"
     result1 = re.sub(r'[：:\s\']+', '|', result1)
     result1 = re_sub(result1)
 
-    result2 = re.sub(r'[,()（）:.。?：;，、\'\"]*', '', b)
+    # 先把字符串中的float的点号替换成^,再过滤其他点号,最后把^再替换成点号，目的是保留float类型的数字中的点号
+    b = re.sub(r'([0-9])[.]([0-9])', r'\g<1>^\g<2>', b)
+    b = re.sub(r'[,()（）:.。?：;，、\'\"]*', '', b)
+    result2 = re.sub(r'([0-9])[\^]([0-9])', r'\g<1>.\g<2>', b)
+
     result2 = re.sub(r'\s+', '|', result2)
     list2 = list(map(str, result2.split('|')))
     list1 = list(map(str, result1.split('|')))
@@ -122,10 +148,18 @@ def texts_pair_algorithm_aa(a, b):
     return percentage, filter_texts, aa_vin
 
 def texts_pair_algorithm_bb(a, b):
-    result1 = re.sub(r'[\s,()（）:.。?：;，、\'\"]*', '', '|'.join(list(map(lambda x: x[1][0], a))))
+    a_str = '|'.join(list(map(lambda x: x[1][0], a)))
+    # 先把字符串中的float的点号替换成^,再过滤其他点号,最后把^再替换成点号，目的是保留float类型的数字中的点号
+    a_str = re.sub(r'([0-9])[.]([0-9])', r'\g<1>^\g<2>', a_str)
+    a_str = re.sub(r'[\s,()（）:.。?：;，、\'\"]*', '', a_str)
+    result1 = re.sub(r'([0-9])[\^]([0-9])', r'\g<1>.\g<2>', a_str)
     result1 = re_sub(result1)
 
-    result2 = re.sub(r'[\s,()（）:.。?：;，、\'\"]*', '', b)
+    # 先把字符串中的float的点号替换成^,再过滤其他点号,最后把^再替换成点号，目的是保留float类型的数字中的点号
+    b = re.sub(r'([0-9])[.]([0-9])', r'\g<1>^\g<2>', b)
+    b = re.sub(r'[\s,()（）:.。?：;，、\'\"]*', '', b)
+    result2 = re.sub(r'([0-9])[\^]([0-9])', r'\g<1>.\g<2>', b)
+
     list2 = list(map(str, result2.split('|')))
     list1 = list(map(str, result1.split('|')))
 

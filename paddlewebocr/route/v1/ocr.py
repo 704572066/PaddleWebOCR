@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 import orjson
 from typing import Any
+
 from fastapi import APIRouter, File, UploadFile, Form, status
 from fastapi.responses import ORJSONResponse, JSONResponse
 
@@ -16,7 +17,6 @@ from paddlewebocr.pkg.db import save2db, get_imgs, get_texts
 from paddlewebocr.pkg.edge import get_receipt_contours
 from paddlewebocr.pkg.pair import texts_pair_algorithm_aa, texts_pair_algorithm_bb, split_texts, texts_pair_algorithm
 from typing import List
-
 
 
 
@@ -50,8 +50,11 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     else:
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST,
                             content={'code': 4001, 'msg': '没有传入参数'})
-
+    # for k, v in img._getexif().items():
+    #     print(TAGS.get(k, k), v)
+    # img.show()
     img = rotate_image(img)
+
     # img = img.convert("RGB")
     # img = compress_image(img, compress_size)
 
@@ -114,7 +117,7 @@ async def images(vin: str = Form(None)):
     list = []
     # pair  = []
     for row in results:
-        pair = {'id':row[0],'location_img':'data:image/jpeg;base64,'+row[1],'label_img':'data:image/jpeg;base64,'+row[2],'rotate':row[9]}
+        pair = {'id':row[0],'location_img':'data:image/jpeg;base64,'+row[1],'label_img':'data:image/jpeg;base64,'+row[2],'rotate':row[9],'margin':row[10]}
         # pair.append(row[0])
         # pair.append('data:image/jpeg;base64,'+row[1])
         # pair.append('data:image/jpeg;base64,'+row[2])
@@ -217,7 +220,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     t = time.localtime()
     # img = img.convert("RGB")
     uid = uuid.uuid4()
-    img.save("images/ford/%s_%s_%s_%s.jpg" % (uid, id, compress_size, label_extract), format="JPEG", quality=100)
+    img.save("images/ford/%s_%s_%s_%s.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S",t), id, compress_size, label_extract), format="JPEG", quality=100)
 
     # 压缩图片
     img = compress_image(img, compress_size)
@@ -333,7 +336,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
             else:
                 i += 1
         img_drawed = draw_box_on_image(img, filter_texts)
-        img_drawed.save("images/ford/%s_%s_%s_%s_fail.jpg" % (uid, id, compress_size, label_extract))
+        img_drawed.save("images/ford/%s_%s_%s_%s_fail.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S",t), id, compress_size, label_extract))
 
         img_drawed_b64 = convert_image_to_b64(img_drawed)
         data = {'code': 1, 'msg': '失败', 'data': {'img_detected': 'data:image/jpeg;base64,' + img_drawed_b64,

@@ -25,7 +25,9 @@ def rotate_image(img: Image) -> Image:
     if hasattr(img, '_getexif') and img._getexif() is not None:
         orientation = 274
         exif = dict(img._getexif().items())
+        print(exif)
         if orientation in exif:
+            print(exif[orientation])
             if exif[orientation] == 3:
                 img = img.rotate(180, expand=True)
             elif exif[orientation] == 6:
