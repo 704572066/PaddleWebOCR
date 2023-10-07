@@ -12,6 +12,8 @@ from fastapi.responses import ORJSONResponse, JSONResponse
 from paddlewebocr.pkg.ocr.baidu_ocr import baidu_ocr
 from paddlewebocr.pkg.ocr.dataelem_ocr import dataelem_ocr
 from paddlewebocr.pkg.ocr.huawei_ocr import huawei_ocr
+from paddlewebocr.pkg.qualify.label_qualify import label_qualify
+from paddlewebocr.pkg.qualify.paddle_detection import det
 from paddlewebocr.pkg.util import *
 from paddlewebocr.pkg.db import save2db, get_imgs, get_texts
 from paddlewebocr.pkg.edge import get_receipt_contours
@@ -43,6 +45,14 @@ async def ocr(img_upload: List[UploadFile] = File(None),
               language: str = Form(None)):
     start_time = time.time()
     img_bytes = img_upload[0].file.read()
+    quality, ratio = label_qualify(img_bytes, 0.8)
+    print(ratio)
+
+    if quality is False:
+        data = {'code': 2, 'msg': '图片不合规,提取不到文字,请重新拍摄', 'ratio': ratio}
+        return MyORJSONResponse(content=data)
+
+
     if img_upload is not None:
         img = convert_bytes_to_image(img_bytes)
     elif img_b64 is not None:
@@ -53,8 +63,9 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     # for k, v in img._getexif().items():
     #     print(TAGS.get(k, k), v)
     # img.show()
-    img = rotate_image(img)
+    # img = rotate_image(img)
 
+    points = det(img_bytes)
     # img = img.convert("RGB")
     # img = compress_image(img, compress_size)
 
@@ -94,6 +105,9 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     #     if text[1][1] < confidence:
     #         texts.pop(i)
     img_drawed = draw_box_on_image(img.copy(), texts)
+    #添加ppdet检测边框
+    img_drawed = draw_det_box_on_image(img_drawed, points)
+
     img_drawed_b64 = convert_image_to_b64(img_drawed)
 
     # save2db("123",img_bytes,img_upload[1].file.read(),'|'.join(list(map(lambda x: x[1][0], texts))))
@@ -117,7 +131,7 @@ async def images(vin: str = Form(None)):
     list = []
     # pair  = []
     for row in results:
-        pair = {'id':row[0],'location_img':'data:image/jpeg;base64,'+row[1],'label_img':'data:image/jpeg;base64,'+row[2],'rotate':row[9],'margin':row[10]}
+        pair = {'id':row[0],'location_img':'data:image/jpeg;base64,'+row[1],'label_img':'data:image/jpeg;base64,'+row[2],'rotate':row[9],'margin':row[10],'frame_rotate':row[11]}
         # pair.append(row[0])
         # pair.append('data:image/jpeg;base64,'+row[1])
         # pair.append('data:image/jpeg;base64,'+row[2])
@@ -237,10 +251,14 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         texts_confidence = get_texts(id)
 
     if label_extract:
-        img = get_receipt_contours(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
-        if img is None:
-            data = {'code': 2, 'msg': '图片不合规,提取不到标签,请重新拍摄'}
+        quality, ratio = label_qualify(img_bytes, 0.8)
+        if quality is False:
+            data = {'code': 2, 'msg': '图片不合规,提取不到文字,请重新拍摄', 'ratio': ratio}
             return MyORJSONResponse(content=data)
+        # img = get_receipt_contours(cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
+        # if img is None:
+        #     data = {'code': 2, 'msg': '图片不合规,提取不到标签,请重新拍摄'}
+        #     return MyORJSONResponse(content=data)
         # 文字方向检测
         # if texts_confidence[2]:
         #     img = orientation_detect(img)
@@ -248,7 +266,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         #         data = {'code': 2, 'msg': '图片不合规,文字方向检测错误,请重新拍摄'}
         #         return MyORJSONResponse(content=data)
 
-        img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
+        # img = Image.fromarray(cv2.cvtColor(np.uint8(img), cv2.COLOR_RGB2BGR))
     # texts = text_ocr(img, ocr_model)
 
     # b64 = convert_image_to_b64(img)

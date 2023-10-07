@@ -40,7 +40,7 @@ def get_imgs(vin):
         # 注意使用Binary()函数来指定存储的是二进制
         # cursor.execute("INSERT INTO ford values(%s,%s,%s,%s)" % (vin,img1,img2,text))
 
-        sql = "select id,img1,img2,text,confidence,direction,lang,model,percentage,rotate,margin from ford where vin = %s"
+        sql = "select id,img1,img2,text,confidence,direction,lang,model,percentage,rotate,margin,frame_rotate from ford where vin = %s"
 
         # cursor.execute(sql)
 

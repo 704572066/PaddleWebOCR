@@ -46,6 +46,11 @@ def draw_box_on_image(img: Image, texts: list) -> Image:
         # img_draw.polygon(points, outline=colors[random.randint(0, len(colors) - 1)])
         img_draw.line(points, width=8, fill=colors[random.randint(0, len(colors) - 1)])
     return img
+def draw_det_box_on_image(img: Image, points: list) -> Image:
+    img_draw = ImageDraw.Draw(img)
+    colors = ['red', 'green', 'yellow']
+    img_draw.rectangle(points, fill=None, outline="red", width=10)
+    return img
 
 def draw_text_on_image(img: Image, texts: list) -> Image:
     img_draw = ImageDraw.Draw(img)
