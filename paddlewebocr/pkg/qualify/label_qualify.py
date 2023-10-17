@@ -14,6 +14,6 @@ def label_qualify(img_bytes,threshold):
     array = det(img_bytes)
     label_size = (array[2]-array[0])*(array[3]-array[1])
     ratio = label_size/img_size
-    if ratio >= threshold:
+    if threshold <= ratio < 1:
         return True, ratio
     return False, ratio
