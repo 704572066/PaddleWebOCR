@@ -7,7 +7,7 @@ from PIL.Image import Image
 
 MAX_COMPRESS_SIZE = 1600
 
-server = "http://192.168.11.102:21339/"
+server = "http://192.168.11.102:21339"
 def dataelem_ocr(b64, scene):
     url = f'{server}/lab/ocr/predict/general'
 

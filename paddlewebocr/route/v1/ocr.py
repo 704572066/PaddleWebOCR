@@ -45,12 +45,12 @@ async def ocr(img_upload: List[UploadFile] = File(None),
               language: str = Form(None)):
     start_time = time.time()
     img_bytes = img_upload[0].file.read()
-    quality, ratio = label_qualify(img_bytes, 0.8)
-    print(ratio)
-
-    if quality is False:
-        data = {'code': 2, 'msg': '图片不合规,提取不到文字,请重新拍摄', 'ratio': ratio}
-        return MyORJSONResponse(content=data)
+    # quality, ratio = label_qualify(img_bytes, 0.8)
+    # print(ratio)
+    #
+    # if quality is False:
+    #     data = {'code': 2, 'msg': '图片不合规,提取不到文字,请重新拍摄', 'ratio': ratio}
+    #     return MyORJSONResponse(content=data)
 
 
     if img_upload is not None:
@@ -65,7 +65,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     # img.show()
     # img = rotate_image(img)
 
-    points = det(img_bytes)
+    # points = det(img_bytes)
     # img = img.convert("RGB")
     # img = compress_image(img, compress_size)
 
@@ -105,8 +105,8 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     #     if text[1][1] < confidence:
     #         texts.pop(i)
     img_drawed = draw_box_on_image(img.copy(), texts)
-    #添加ppdet检测边框
-    img_drawed = draw_det_box_on_image(img_drawed, points)
+    # 添加ppdet检测边框
+    # img_drawed = draw_det_box_on_image(img_drawed, points)
 
     img_drawed_b64 = convert_image_to_b64(img_drawed)
 
@@ -234,10 +234,13 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     t = time.localtime()
     # img = img.convert("RGB")
     uid = uuid.uuid4()
-    img.save("images/ford/%s_%s_%s_%s.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S",t), id, compress_size, label_extract), format="JPEG", quality=100)
+    img.save("images/ford/original/%s_%s_%s_%s.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S",t), id, compress_size, label_extract), format="JPEG", quality=100)
 
     # 压缩图片
     img = compress_image(img, compress_size)
+
+    img.save("images/ford/compress/%s_%s_%s_%s.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S", t), id, compress_size, label_extract), format="JPEG", quality=100)
+
     texts_confidence = None
     print("++++++++++++++")
     # print(mysql_res)
@@ -251,7 +254,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         texts_confidence = get_texts(id)
 
     if label_extract:
-        quality, ratio = label_qualify(img_bytes, 0.8)
+        quality, ratio = label_qualify(convert_image_to_bytes(img), 0.8)
         if quality is False:
             data = {'code': 2, 'msg': '图片不合规,提取不到文字,请重新拍摄', 'ratio': ratio}
             return MyORJSONResponse(content=data)
@@ -354,7 +357,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
             else:
                 i += 1
         img_drawed = draw_box_on_image(img, filter_texts)
-        img_drawed.save("images/ford/%s_%s_%s_%s_fail.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S",t), id, compress_size, label_extract))
+        img_drawed.save("images/ford/compress/%s_%s_%s_%s_fail.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S",t), id, compress_size, label_extract))
 
         img_drawed_b64 = convert_image_to_b64(img_drawed)
         data = {'code': 1, 'msg': '失败', 'data': {'img_detected': 'data:image/jpeg;base64,' + img_drawed_b64,
@@ -363,7 +366,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
     else:
         if percentage > 0:
             img_drawed = draw_text_on_image(img, filter_texts)
-            img_drawed.save("images/ford/%s_%s_%s_%s_success.jpg" % (uid, id, compress_size, label_extract))
+            img_drawed.save("images/ford/compress/%s_%s_%s_%s_success.jpg" % (uid, id, compress_size, label_extract))
 
         data = {'code': 0, 'msg': '成功', 'data': {'percentage': percentage,'speed_time': round(time.time() - start_time, 2)}}
     # if length1 <= length2:
