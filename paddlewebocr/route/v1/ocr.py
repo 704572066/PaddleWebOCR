@@ -286,8 +286,7 @@ async def ocr(img_upload: List[UploadFile] = File(None),
         # language = ( (language == "en") and "english_print" or "chinese_print")
         texts = baidu_ocr(img, language)[0]
 
-    img.save("images/ford/rotate/"
-             "/%s_%s_%s_%s.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S", t), id, compress_size, label_extract),
+    img.save("images/ford/rotate/%s_%s_%s_%s.jpg" % (time.strftime("%Y-%m-%d-%H-%M-%S", t), id, compress_size, label_extract),
              format="JPEG", quality=100)
 
     # texts = text_ocr_v4(img, texts_confidence[3])
